@@ -1,0 +1,12 @@
+# Tooling
+.claude/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Playwright / preview artifacts
+.playwright-mcp/
+preview-*.png
