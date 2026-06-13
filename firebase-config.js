@@ -30,8 +30,8 @@ export const googleProvider = new GoogleAuthProvider();
 //  each signed-in user their own UID so you can capture them.
 // ------------------------------------------------------------
 export const ROLES = {
-  ENGINEER_UID: "",   // <-- your (engineer) Google UID
-  DOCTOR_UID: "",     // <-- the doctor's Google UID
+  ENGINEER_UID: "87JhMCZlJlYnyZabxX5oKz4aqbr2",   // you (engineer)
+  DOCTOR_UID: "WcGOqJl1ewO3gryfuPGGjY6mHft1",     // Dr. Sakara Ajhor
 };
 
 export function roleForUid(uid) {
