@@ -10,3 +10,8 @@ Thumbs.db
 # Playwright / preview artifacts
 .playwright-mcp/
 preview-*.png
+*.png
+
+# Scratch / local notes (raw config dump — not needed in repo)
+info
+Untitled-*.js

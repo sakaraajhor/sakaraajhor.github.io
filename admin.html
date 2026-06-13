@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · Dr. Sakara Ajhor</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230f4c5c'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='52' fill='%23e9c46a' text-anchor='middle'%3ESA%3C/text%3E%3C/svg%3E" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="admin-body">
+
+  <!-- Top bar -->
+  <header class="admin-bar">
+    <a href="index.html" class="brand" aria-label="Back to site">
+      <span class="brand__mark">SA</span>
+      <span class="brand__text">Admin</span>
+    </a>
+    <div class="admin-bar__right">
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode" title="Toggle theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <div class="user-chip hidden" id="userChip">
+        <img id="userPhoto" alt="" referrerpolicy="no-referrer" />
+        <div>
+          <div class="user-chip__name" id="userName"></div>
+          <div class="user-chip__email" id="userEmail"></div>
+        </div>
+      </div>
+      <button class="btn-text hidden" id="signOutBtn">Sign out</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+
+    <!-- Loading -->
+    <div id="loadingView">
+      <p style="color: var(--muted)">Loading…</p>
+    </div>
+
+    <!-- Login -->
+    <div class="login-card hidden" id="loginView">
+      <div class="login-card__mark">SA</div>
+      <h1>Admin Access</h1>
+      <p>Sign in with your Google account to manage the portfolio.</p>
+      <button class="btn-google" id="googleSignIn">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.3-5.6l-6.6-5.6C29.7 34.6 27 35.6 24 35.6c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.6 5.6C41.4 36.3 44 30.6 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
+        Continue with Google
+      </button>
+      <p class="login-note">Access is restricted. Visitors can sign in but only admins can manage content.</p>
+    </div>
+
+    <!-- Restricted (signed-in visitor / role not yet assigned) -->
+    <div class="restricted hidden" id="restrictedView">
+      <div class="restricted__icon">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h1>Admin access pending</h1>
+      <p>You're signed in, but this account doesn't have admin rights yet.</p>
+      <div class="uid-box">
+        <h4>Your account ID (UID)</h4>
+        <p>Send this to your engineer to be granted access:</p>
+        <div class="uid-row">
+          <code class="uid-code" id="uidCodeRestricted"></code>
+          <button class="btn-copy" data-copy="#uidCodeRestricted">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard (admins) -->
+    <div class="dash hidden" id="dashView">
+      <div class="dash__head">
+        <h1>Welcome, <span id="dashName">there</span><span class="role-badge" id="dashRole"></span></h1>
+        <p>Manage your portfolio content, messages, and more.</p>
+      </div>
+
+      <div class="tiles">
+        <div class="tile">
+          <div class="tile__soon">Phase 2</div>
+          <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
+          <h3>Edit Content</h3>
+          <p>Section text, About facts, and contact details.</p>
+        </div>
+        <div class="tile">
+          <div class="tile__soon">Phase 3</div>
+          <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></div>
+          <h3>Blog &amp; Research</h3>
+          <p>Write posts and add research entries with images.</p>
+        </div>
+        <div class="tile">
+          <div class="tile__soon">Phase 4</div>
+          <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg></div>
+          <h3>Messages</h3>
+          <p>Chat with visitors in real time.</p>
+        </div>
+        <div class="tile">
+          <div class="tile__soon">Phase 6</div>
+          <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div>
+          <h3>Analytics</h3>
+          <p>Visits, link clicks, and engagement KPIs.</p>
+        </div>
+
+        <!-- Engineer-only: hidden from the doctor -->
+        <div class="tile tile--engineer hidden" id="engineerTile">
+          <div class="tile__soon">Phase 7</div>
+          <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7ZM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z"/></svg></div>
+          <h3>Surprise Cards</h3>
+          <p>Send a stylish card to the doctor. (Engineer only)</p>
+        </div>
+      </div>
+
+      <div class="uid-box">
+        <h4>Your account ID (UID)</h4>
+        <p>Reference for role setup.</p>
+        <div class="uid-row">
+          <code class="uid-code" id="uidCodeDash"></code>
+          <button class="btn-copy" data-copy="#uidCodeDash">Copy</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="theme.js"></script>
+  <script type="module">
+    import { auth, googleProvider, roleForUid } from "./firebase-config.js";
+    import {
+      onAuthStateChanged, signInWithPopup, signOut
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+    const $ = (s) => document.querySelector(s);
+    const views = {
+      loading: $("#loadingView"),
+      login: $("#loginView"),
+      restricted: $("#restrictedView"),
+      dash: $("#dashView"),
+    };
+    function show(view) {
+      Object.values(views).forEach((v) => v.classList.add("hidden"));
+      views[view].classList.remove("hidden");
+    }
+
+    // Sign in
+    $("#googleSignIn").addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (e) {
+        alert("Sign-in failed: " + (e && e.message ? e.message : e));
+      }
+    });
+
+    // Sign out
+    $("#signOutBtn").addEventListener("click", () => signOut(auth));
+
+    // Copy buttons
+    document.querySelectorAll(".btn-copy").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const code = document.querySelector(btn.dataset.copy).textContent;
+        try {
+          await navigator.clipboard.writeText(code);
+          const old = btn.textContent; btn.textContent = "Copied!";
+          setTimeout(() => (btn.textContent = old), 1500);
+        } catch (e) { /* ignore */ }
+      });
+    });
+
+    // Auth state
+    onAuthStateChanged(auth, (user) => {
+      const chip = $("#userChip"), out = $("#signOutBtn");
+      if (!user) {
+        chip.classList.add("hidden");
+        out.classList.add("hidden");
+        show("login");
+        return;
+      }
+
+      // Header user chip
+      chip.classList.remove("hidden");
+      out.classList.remove("hidden");
+      $("#userPhoto").src = user.photoURL || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%230f4c5c'/%3E%3C/svg%3E";
+      $("#userName").textContent = user.displayName || "Account";
+      $("#userEmail").textContent = user.email || "";
+
+      const role = roleForUid(user.uid);
+      $("#uidCodeRestricted").textContent = user.uid;
+      $("#uidCodeDash").textContent = user.uid;
+
+      if (role === "visitor") {
+        show("restricted");
+        return;
+      }
+
+      // Admin / engineer dashboard
+      $("#dashName").textContent = (user.displayName || "").split(" ")[0] || "there";
+      const badge = $("#dashRole");
+      badge.textContent = role;
+      badge.className = "role-badge role-badge--" + role;
+      $("#engineerTile").classList.toggle("hidden", role !== "engineer");
+      show("dash");
+    });
+  </script>
+</body>
+</html>
