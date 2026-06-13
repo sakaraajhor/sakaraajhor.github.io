@@ -83,18 +83,18 @@
 
     <!-- Dashboard (admins) -->
     <div class="dash hidden" id="dashView">
+     <div id="dashHome">
       <div class="dash__head">
         <h1>Welcome, <span id="dashName">there</span><span class="role-badge" id="dashRole"></span></h1>
         <p>Manage your portfolio content, messages, and more.</p>
       </div>
 
       <div class="tiles">
-        <div class="tile">
-          <div class="tile__soon">Phase 2</div>
+        <button class="tile tile--active" id="tileContent" type="button">
           <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
           <h3>Edit Content</h3>
           <p>Section text, About facts, and contact details.</p>
-        </div>
+        </button>
         <div class="tile">
           <div class="tile__soon">Phase 3</div>
           <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></div>
@@ -131,16 +131,36 @@
           <button class="btn-copy" data-copy="#uidCodeDash">Copy</button>
         </div>
       </div>
+     </div><!-- /dashHome -->
+
+      <!-- Content editor -->
+      <section id="contentEditor" class="editor hidden">
+        <div class="editor__head">
+          <button class="btn-text" id="editorBack" type="button">← Back</button>
+          <h2>Edit Content</h2>
+          <a class="btn-text" href="index.html" target="_blank" rel="noopener">View site ↗</a>
+        </div>
+        <p class="editor__hint">Changes publish to the live site as soon as you save.</p>
+        <form id="contentForm" class="editor__form"></form>
+        <div class="editor__bar">
+          <span class="editor__status" id="editorStatus"></span>
+          <button class="btn-save" id="editorSave" type="button">Save changes</button>
+        </div>
+      </section>
+
     </div>
 
   </main>
 
   <script src="theme.js"></script>
   <script type="module">
-    import { auth, googleProvider, roleForUid } from "./firebase-config.js";
+    import { auth, googleProvider, roleForUid, db } from "./firebase-config.js";
     import {
       onAuthStateChanged, signInWithPopup, signOut
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import {
+      doc, getDoc, setDoc
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
     const $ = (s) => document.querySelector(s);
     const views = {
@@ -212,6 +232,161 @@
       $("#engineerTile").classList.toggle("hidden", role !== "engineer");
       show("dash");
     });
+
+    // ----------------------------------------------------------
+    //  Content editor (Phase 2)
+    // ----------------------------------------------------------
+    const CONTENT_DEFAULTS = {
+      hero: {
+        eyebrow: "Intern Doctor · BDS · Dhaka, Bangladesh",
+        lede: "Improving public health outcomes through epidemiological research, health-system strengthening, and data-driven approaches to community-based healthcare delivery.",
+      },
+      about: {
+        lead: "I am an intern doctor and dental surgeon committed to the intersection of clinical care and public health.",
+        p1: "My interest centres on epidemiological research and community-based healthcare, with a particular interest in oral health, preventive care, and the systems that make quality care accessible. I combine clinical assessment with structured data analysis to turn observation into insight, and insight into better outcomes for patients and communities.",
+        p2: "Trained in advanced research methodology and statistical reporting, I approach every project with rigour, empathy, and a commitment to the people behind the data.",
+        facts: [
+          { label: "Current role", value: "Intern Doctor", sub: "Sir Salimullah Medical College Mitford Hospital" },
+          { label: "Focus areas", value: "Public Health & Dentistry", sub: "Epidemiology · Preventive care · Health systems" },
+          { label: "Location", value: "Dhaka, Bangladesh", sub: "Open to research & clinical collaboration" },
+        ],
+      },
+      contact: {
+        email: "arinaajjhor@gmail.com",
+        phone: "+880 1706 312638",
+        location: "72 Nayapaltan, Faruque Orchard Tower, Dhaka 1000",
+        linkedinLabel: "Sakara Ajhor",
+        linkedinUrl: "https://www.linkedin.com/in/sakara-ajhor-bb1913330",
+        referenceName: "Dr. Md. Inamul Hassan",
+        referenceDetail: "— Associate Professor, Department of Dental Public Health, Sir Salimullah Medical College, Dhaka.",
+        referenceContact: "talalalpha@yahoo.com · +880 1911 485946",
+      },
+    };
+
+    const CONTENT_SCHEMA = [
+      { group: "Hero", fields: [
+        { path: "hero.eyebrow", label: "Eyebrow line", type: "text" },
+        { path: "hero.lede", label: "Intro paragraph", type: "textarea" },
+      ]},
+      { group: "Profile / About", fields: [
+        { path: "about.lead", label: "Lead statement", type: "textarea" },
+        { path: "about.p1", label: "Paragraph 1", type: "textarea" },
+        { path: "about.p2", label: "Paragraph 2", type: "textarea" },
+        { path: "about.facts.0.label", label: "Fact 1 — label", type: "text" },
+        { path: "about.facts.0.value", label: "Fact 1 — value", type: "text" },
+        { path: "about.facts.0.sub", label: "Fact 1 — detail", type: "text" },
+        { path: "about.facts.1.label", label: "Fact 2 — label", type: "text" },
+        { path: "about.facts.1.value", label: "Fact 2 — value", type: "text" },
+        { path: "about.facts.1.sub", label: "Fact 2 — detail", type: "text" },
+        { path: "about.facts.2.label", label: "Fact 3 — label", type: "text" },
+        { path: "about.facts.2.value", label: "Fact 3 — value", type: "text" },
+        { path: "about.facts.2.sub", label: "Fact 3 — detail", type: "text" },
+      ]},
+      { group: "Contact", fields: [
+        { path: "contact.email", label: "Email", type: "text" },
+        { path: "contact.phone", label: "Phone", type: "text" },
+        { path: "contact.location", label: "Location", type: "text" },
+        { path: "contact.linkedinLabel", label: "LinkedIn — display name", type: "text" },
+        { path: "contact.linkedinUrl", label: "LinkedIn — URL", type: "text" },
+        { path: "contact.referenceName", label: "Reference — name", type: "text" },
+        { path: "contact.referenceDetail", label: "Reference — detail", type: "textarea" },
+        { path: "contact.referenceContact", label: "Reference — contact", type: "text" },
+      ]},
+    ];
+
+    const getPath = (o, p) => p.split(".").reduce((a, k) => (a == null ? undefined : a[k]), o);
+    function setPath(o, p, val) {
+      const ks = p.split(".");
+      let cur = o;
+      ks.forEach((k, i) => {
+        if (i === ks.length - 1) { cur[k] = val; return; }
+        if (cur[k] == null || typeof cur[k] !== "object") cur[k] = /^\d+$/.test(ks[i + 1]) ? [] : {};
+        cur = cur[k];
+      });
+    }
+    const fieldId = (p) => "f_" + p.replace(/\./g, "_");
+
+    function buildForm() {
+      const form = $("#contentForm");
+      form.innerHTML = "";
+      CONTENT_SCHEMA.forEach((grp) => {
+        const g = document.createElement("div");
+        g.className = "editor__group";
+        const h = document.createElement("h3");
+        h.textContent = grp.group;
+        g.appendChild(h);
+        grp.fields.forEach((f) => {
+          const wrap = document.createElement("div");
+          wrap.className = "field";
+          const lbl = document.createElement("label");
+          lbl.setAttribute("for", fieldId(f.path));
+          lbl.textContent = f.label;
+          const input = document.createElement(f.type === "textarea" ? "textarea" : "input");
+          input.id = fieldId(f.path);
+          input.dataset.path = f.path;
+          if (f.type !== "textarea") input.type = "text";
+          wrap.appendChild(lbl);
+          wrap.appendChild(input);
+          g.appendChild(wrap);
+        });
+        form.appendChild(g);
+      });
+    }
+
+    let editorLoaded = false;
+    async function openEditor() {
+      $("#dashHome").classList.add("hidden");
+      $("#contentEditor").classList.remove("hidden");
+      if (!editorLoaded) { buildForm(); editorLoaded = true; }
+      $("#editorStatus").textContent = "Loading current content…";
+      $("#editorStatus").className = "editor__status";
+
+      let data = {};
+      try {
+        const snap = await getDoc(doc(db, "content", "site"));
+        if (snap.exists()) data = snap.data();
+      } catch (e) { /* use defaults */ }
+
+      // Populate: saved value, else default
+      CONTENT_SCHEMA.forEach((grp) => grp.fields.forEach((f) => {
+        const el = document.getElementById(fieldId(f.path));
+        const saved = getPath(data, f.path);
+        const def = getPath(CONTENT_DEFAULTS, f.path);
+        el.value = (saved != null && saved !== "") ? saved : (def != null ? def : "");
+      }));
+      $("#editorStatus").textContent = "";
+    }
+
+    function closeEditor() {
+      $("#contentEditor").classList.add("hidden");
+      $("#dashHome").classList.remove("hidden");
+    }
+
+    async function saveContent() {
+      const btn = $("#editorSave"), status = $("#editorStatus");
+      btn.disabled = true;
+      status.className = "editor__status";
+      status.textContent = "Saving…";
+      const out = {};
+      $("#contentForm").querySelectorAll("[data-path]").forEach((el) => {
+        setPath(out, el.dataset.path, el.value.trim());
+      });
+      try {
+        await setDoc(doc(db, "content", "site"), out, { merge: true });
+        status.className = "editor__status ok";
+        status.textContent = "Saved — live on the site.";
+      } catch (e) {
+        status.className = "editor__status err";
+        status.textContent = "Save failed: " + (e && e.code ? e.code : e.message || e);
+      } finally {
+        btn.disabled = false;
+        setTimeout(() => { if (status.classList.contains("ok")) status.textContent = ""; }, 4000);
+      }
+    }
+
+    $("#tileContent").addEventListener("click", openEditor);
+    $("#editorBack").addEventListener("click", closeEditor);
+    $("#editorSave").addEventListener("click", saveContent);
   </script>
 </body>
 </html>

@@ -341,8 +341,11 @@ a.contact__card:hover { background: rgba(255,255,255,0.12); transform: translate
 .footer__inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
 .footer .brand__mark { width: 38px; height: 38px; font-size: 1rem; }
 .footer p { font-size: 0.9rem; }
+.footer__links { display: flex; align-items: center; gap: 22px; }
 .footer__top { font-size: 0.9rem; color: var(--gold-soft); transition: 0.25s; }
 .footer__top:hover { color: var(--gold); }
+.footer__admin { font-size: 0.82rem; color: rgba(247,243,236,0.4); transition: color 0.25s; }
+.footer__admin:hover { color: var(--gold-soft); }
 
 /* ---------- Reveal animation ---------- */
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }

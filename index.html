@@ -64,9 +64,9 @@
     </div>
     <div class="hero__inner">
       <div class="hero__content reveal">
-        <p class="hero__eyebrow">Intern Doctor · BDS · Dhaka, Bangladesh</p>
+        <p class="hero__eyebrow" data-content="hero.eyebrow">Intern Doctor · BDS · Dhaka, Bangladesh</p>
         <h1 class="hero__title">Dr. Sakara<br />Ajhor</h1>
-        <p class="hero__lede">
+        <p class="hero__lede" data-content="hero.lede">
           Improving public health outcomes through epidemiological research,
           health-system strengthening, and data-driven approaches to
           community-based healthcare delivery.
@@ -104,18 +104,18 @@
     </div>
     <div class="about">
       <div class="about__text reveal">
-        <p class="about__lead">
+        <p class="about__lead" data-content="about.lead">
           I am an intern doctor and dental surgeon committed to the intersection
           of clinical care and public health.
         </p>
-        <p>
+        <p data-content="about.p1">
           My interest centres on epidemiological research and community-based
           healthcare, with a particular interest in oral health, preventive care,
           and the systems that make quality care accessible. I combine clinical
           assessment with structured data analysis to turn observation into
           insight, and insight into better outcomes for patients and communities.
         </p>
-        <p>
+        <p data-content="about.p2">
           Trained in advanced research methodology and statistical reporting, I
           approach every project with rigour, empathy, and a commitment to the
           people behind the data.
@@ -123,19 +123,19 @@
       </div>
       <aside class="about__facts reveal">
         <div class="fact">
-          <span class="fact__label">Current role</span>
-          <span class="fact__value">Intern Doctor</span>
-          <span class="fact__sub">Sir Salimullah Medical College Mitford Hospital</span>
+          <span class="fact__label" data-content="about.facts.0.label">Current role</span>
+          <span class="fact__value" data-content="about.facts.0.value">Intern Doctor</span>
+          <span class="fact__sub" data-content="about.facts.0.sub">Sir Salimullah Medical College Mitford Hospital</span>
         </div>
         <div class="fact">
-          <span class="fact__label">Focus areas</span>
-          <span class="fact__value">Public Health &amp; Dentistry</span>
-          <span class="fact__sub">Epidemiology · Preventive care · Health systems</span>
+          <span class="fact__label" data-content="about.facts.1.label">Focus areas</span>
+          <span class="fact__value" data-content="about.facts.1.value">Public Health &amp; Dentistry</span>
+          <span class="fact__sub" data-content="about.facts.1.sub">Epidemiology · Preventive care · Health systems</span>
         </div>
         <div class="fact">
-          <span class="fact__label">Location</span>
-          <span class="fact__value">Dhaka, Bangladesh</span>
-          <span class="fact__sub">Open to research &amp; clinical collaboration</span>
+          <span class="fact__label" data-content="about.facts.2.label">Location</span>
+          <span class="fact__value" data-content="about.facts.2.value">Dhaka, Bangladesh</span>
+          <span class="fact__sub" data-content="about.facts.2.sub">Open to research &amp; clinical collaboration</span>
         </div>
       </aside>
     </div>
@@ -393,28 +393,28 @@
       </div>
 
       <div class="contact__grid">
-        <a class="contact__card reveal" href="mailto:arinaajjhor@gmail.com">
+        <a class="contact__card reveal" href="mailto:arinaajjhor@gmail.com" data-href-mailto="contact.email">
           <span class="contact__label">Email</span>
-          <span class="contact__value">arinaajjhor@gmail.com</span>
+          <span class="contact__value" data-content="contact.email">arinaajjhor@gmail.com</span>
         </a>
-        <a class="contact__card reveal" href="tel:+8801706312638">
+        <a class="contact__card reveal" href="tel:+8801706312638" data-href-tel="contact.phone">
           <span class="contact__label">Phone</span>
-          <span class="contact__value">+880 1706 312638</span>
+          <span class="contact__value" data-content="contact.phone">+880 1706 312638</span>
         </a>
         <div class="contact__card reveal">
           <span class="contact__label">Location</span>
-          <span class="contact__value">72 Nayapaltan, Faruque Orchard Tower, Dhaka 1000</span>
+          <span class="contact__value" data-content="contact.location">72 Nayapaltan, Faruque Orchard Tower, Dhaka 1000</span>
         </div>
-        <a class="contact__card reveal" href="https://www.linkedin.com/in/sakara-ajhor-bb1913330" target="_blank" rel="noopener noreferrer">
+        <a class="contact__card reveal" href="https://www.linkedin.com/in/sakara-ajhor-bb1913330" target="_blank" rel="noopener noreferrer" data-href="contact.linkedinUrl">
           <span class="contact__label">LinkedIn</span>
-          <span class="contact__value">Sakara Ajhor</span>
+          <span class="contact__value" data-content="contact.linkedinLabel">Sakara Ajhor</span>
         </a>
       </div>
 
       <div class="reference reveal">
         <span class="reference__label">Reference</span>
-        <p><strong>Dr. Md. Inamul Hassan</strong> — Associate Professor, Department of Dental Public Health, Sir Salimullah Medical College, Dhaka.</p>
-        <p class="reference__contact">talalalpha@yahoo.com · +880 1911 485946</p>
+        <p><strong data-content="contact.referenceName">Dr. Md. Inamul Hassan</strong> <span data-content="contact.referenceDetail">— Associate Professor, Department of Dental Public Health, Sir Salimullah Medical College, Dhaka.</span></p>
+        <p class="reference__contact" data-content="contact.referenceContact">talalalpha@yahoo.com · +880 1911 485946</p>
       </div>
     </div>
   </section>
@@ -423,11 +423,15 @@
     <div class="footer__inner">
       <span class="brand__mark">SA</span>
       <p>© <span id="year"></span> Dr. Sakara Ajhor. All rights reserved.</p>
-      <a href="#top" class="footer__top">Back to top ↑</a>
+      <div class="footer__links">
+        <a href="admin.html" class="footer__admin">Admin</a>
+        <a href="#top" class="footer__top">Back to top ↑</a>
+      </div>
     </div>
   </footer>
 
   <script src="theme.js"></script>
   <script src="script.js"></script>
+  <script type="module" src="content-loader.js"></script>
 </body>
 </html>
