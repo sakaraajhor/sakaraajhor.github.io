@@ -168,4 +168,38 @@ button.tile { font: inherit; text-align: left; cursor: pointer; color: inherit; 
 .btn-save:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(224,177,91,0.4); }
 .btn-save:disabled { opacity: 0.6; cursor: default; transform: none; box-shadow: none; }
 
+/* List / card editors */
+.editor__group h4.sub-h { font-family: var(--sans); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); font-weight: 700; margin: 22px 0 12px; border: 0; padding: 0; }
+.list-items { display: flex; flex-direction: column; gap: 16px; margin-bottom: 14px; }
+.list-item { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: var(--cream); }
+.list-item.custom-sec { background: rgba(42,138,158,0.05); border-color: rgba(42,138,158,0.25); }
+.list-item__bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.list-item__n { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.list-item__ctrls { display: flex; gap: 6px; }
+.list-item__ctrls button {
+  width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--white); color: var(--teal-900); cursor: pointer; font-size: 0.9rem;
+  display: grid; place-items: center; transition: 0.2s var(--ease);
+}
+.list-item__ctrls button:hover { background: rgba(42,138,158,0.12); }
+.list-item__ctrls button.del:hover { background: rgba(192,57,43,0.14); color: #c0392b; border-color: rgba(192,57,43,0.3); }
+.btn-mini {
+  background: rgba(42,138,158,0.1); color: var(--teal-700); border: 1px dashed rgba(42,138,158,0.4);
+  cursor: pointer; padding: 9px 16px; border-radius: 10px; font-family: var(--sans);
+  font-weight: 600; font-size: 0.85rem; transition: 0.2s var(--ease);
+}
+.btn-mini:hover { background: rgba(42,138,158,0.18); }
+
+/* CV upload */
+.field-help { color: var(--muted); font-size: 0.88rem; margin-bottom: 12px; }
+.cv-current { font-size: 0.9rem; color: var(--ink); margin-bottom: 14px; }
+.cv-current a { color: var(--teal-700); font-weight: 600; }
+.cv-upload-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.cv-upload-row input[type="file"] { font-family: var(--sans); font-size: 0.88rem; color: var(--ink); flex: 1; min-width: 200px; }
+.cv-upload-row input[type="file"]::file-selector-button {
+  font-family: var(--sans); font-weight: 600; font-size: 0.85rem; cursor: pointer;
+  background: var(--cream); color: var(--teal-900); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 14px; margin-right: 12px;
+}
+
 .hidden { display: none !important; }

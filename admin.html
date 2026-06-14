@@ -141,6 +141,18 @@
           <a class="btn-text" href="index.html" target="_blank" rel="noopener">View site ↗</a>
         </div>
         <p class="editor__hint">Changes publish to the live site as soon as you save.</p>
+
+        <div class="editor__group" id="cvGroup">
+          <h3>Curriculum Vitae (PDF)</h3>
+          <p class="field-help">Upload a new PDF to replace your CV everywhere on the site. Publishes immediately.</p>
+          <p class="cv-current">Current file: <a id="cvCurrentLink" href="Dr-Sakara-Ajhor-CV.pdf" target="_blank" rel="noopener">view current CV ↗</a></p>
+          <div class="cv-upload-row">
+            <input type="file" id="cvFile" accept="application/pdf" />
+            <button class="btn-text" id="cvUploadBtn" type="button">Upload &amp; publish</button>
+          </div>
+          <span class="editor__status" id="cvStatus"></span>
+        </div>
+
         <form id="contentForm" class="editor__form"></form>
         <div class="editor__bar">
           <span class="editor__status" id="editorStatus"></span>
@@ -154,7 +166,7 @@
 
   <script src="theme.js"></script>
   <script type="module">
-    import { auth, googleProvider, roleForUid, db } from "./firebase-config.js";
+    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js";
     import {
       onAuthStateChanged, signInWithPopup, signOut
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -304,57 +316,236 @@
         cur = cur[k];
       });
     }
-    const fieldId = (p) => "f_" + p.replace(/\./g, "_");
+    const escHtml = (s) => String(s == null ? "" : s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+    const escAttr = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const clone = (o) => JSON.parse(JSON.stringify(o));
 
-    function buildForm() {
-      const form = $("#contentForm");
-      form.innerHTML = "";
+    // Defaults for the card collections (mirror the static HTML)
+    const CARD_DEFAULTS = {
+      timeline: [
+        { tag: "Professional", date: "01/2026 – Present", title: "Intern Doctor", org: "Sir Salimullah Medical College Mitford Hospital, Dhaka", desc: "Providing clinical care and patient management as part of the hospital internship programme." },
+        { tag: "Education", date: "02/2020 – 12/2025", title: "Bachelor of Dental Surgery (BDS)", org: "Sir Salimullah Medical College, Dhaka", desc: "Comprehensive training in clinical dentistry, diagnosis, and patient care. Result: Passed." },
+        { tag: "Education", date: "06/2019", title: "Higher Secondary School Certificate (HSC)", org: "Ideal School and College, Motijheel, Dhaka — Science", desc: "Result: GPA 5.00 out of 5.00." },
+        { tag: "Education", date: "06/2017", title: "Secondary School Certificate (SSC)", org: "Ideal School and College, Motijheel, Dhaka — Science", desc: "Result: GPA 5.00 out of 5.00." },
+      ],
+      research: [
+        { period: "07/2024 – 07/2025", title: "Knowledge & Attitude Towards Replacing Missing Teeth", sub: "Survey among patients attending dental outdoor in a tertiary hospital in Dhaka.", meta: "Supervised by Dr. Md. Inamul Hassan, Associate Professor, Department of Dental Public Health, Sir Salimullah Medical College.", bullets: ["Collected patient data using structured questionnaires.", "Assisted with data entry, ensuring confidentiality and verification for analysis."] },
+        { period: "02/2025", title: "School Health Programme", sub: "Organised by the Public Health Department, Sir Salimullah Medical College.", meta: "", bullets: ["Conducted oral and general health screening.", "Assisted in health education and basic preventive care activities."] },
+        { period: "Certification", title: "Advanced Course on Research Methodology", sub: "Institute of Education and Research, University of Dhaka.", meta: "", bullets: ["Qualitative & quantitative research design and academic writing.", "Bibliography management, citation formatting, and documentation."] },
+      ],
+      skills: {
+        competencies: ["Clinical assessment", "Patient management", "Epidemiological research", "Public speaking", "Leadership", "Event management", "Team collaboration"],
+        tools: [
+          { label: "SPSS — Statistical analysis", pct: 85 },
+          { label: "Microsoft Excel", pct: 88 },
+          { label: "Microsoft Office Suite", pct: 92 },
+          { label: "PowerPoint & Canva", pct: 90 },
+        ],
+        languages: { rows: [{ name: "Bangla / Bengali", level: "Native" }, { name: "English", level: "Professional working" }], note: "Listening · Speaking · Reading · Writing" },
+      },
+      leadership: [
+        { year: "2025", role: "Event Executive", event: "1st International Congress on Kindness, Moral Values & Their Impact on Happiness", desc: "Coordinated on-site operations for attendees to ensure seamless execution." },
+        { year: "2018", role: "Vice-President", event: "11th ISTARC Science & Technology Festival", desc: "Oversaw event management and internal/external responsibilities driving high engagement." },
+        { year: "2014", role: "Patrol Leader", event: "9th Bangladesh & 1st SAANSO Scout Jamboree", desc: "Team coordination, discipline, and leadership at national and regional camps." },
+        { year: "2014", role: "Unit Leader", event: "3rd Regional Cub Camporee", desc: "Led team coordination and discipline in a large regional camp." },
+        { year: "2012", role: "Assistant Patrol Leader", event: "13th Regional Scout Rally", desc: "Supported patrol operations by guiding team members, maintaining order, and encouraging active involvement throughout the rally." },
+        { year: "2011", role: "Team Leader", event: "1st Metropolitan Cub Camporee", desc: "Team management and participation in metropolitan-level scouting activities." },
+      ],
+    };
+    const ALL_DEFAULTS = Object.assign({}, CONTENT_DEFAULTS, { cards: CARD_DEFAULTS, customSections: [] });
+
+    function merge(base, over) {
+      if (over === undefined) return base;
+      if (Array.isArray(over)) return clone(over);
+      if (over && typeof over === "object") {
+        const out = (base && typeof base === "object" && !Array.isArray(base)) ? clone(base) : {};
+        for (const k of Object.keys(over)) out[k] = merge(out[k], over[k]);
+        return out;
+      }
+      return over;
+    }
+
+    let editorModel = {};
+
+    const LIST_DEFS = [
+      { path: "cards.timeline", title: "Experience & Education", itemName: "Entry", fields: [
+        { k: "tag", label: "Tag (e.g. Education)", type: "text" },
+        { k: "date", label: "Date range", type: "text" },
+        { k: "title", label: "Title", type: "text" },
+        { k: "org", label: "Organisation", type: "text" },
+        { k: "desc", label: "Description", type: "textarea" },
+      ]},
+      { path: "cards.research", title: "Research & Field Work", itemName: "Card", fields: [
+        { k: "period", label: "Period / label", type: "text" },
+        { k: "title", label: "Title", type: "text" },
+        { k: "sub", label: "Subtitle", type: "textarea" },
+        { k: "meta", label: "Supervisor / meta (optional)", type: "textarea" },
+        { k: "bullets", label: "Bullet points (one per line)", type: "lines" },
+      ]},
+      { path: "cards.leadership", title: "Leadership & Affiliations", itemName: "Entry", fields: [
+        { k: "year", label: "Year", type: "text" },
+        { k: "role", label: "Role", type: "text" },
+        { k: "event", label: "Event / organisation", type: "text" },
+        { k: "desc", label: "Description", type: "textarea" },
+      ]},
+    ];
+
+    function newItemFor(path) {
+      if (path === "cards.timeline") return { tag: "", date: "", title: "", org: "", desc: "" };
+      if (path === "cards.research") return { period: "", title: "", sub: "", meta: "", bullets: [] };
+      if (path === "cards.leadership") return { year: "", role: "", event: "", desc: "" };
+      if (path === "cards.skills.tools") return { label: "", pct: "" };
+      if (path === "cards.skills.languages.rows") return { name: "", level: "" };
+      if (path === "customSections") return { id: "s" + Date.now(), title: "", intro: "", cards: [] };
+      if (/^customSections\.\d+\.cards$/.test(path)) return { title: "", subtitle: "", body: "", bullets: [] };
+      return {};
+    }
+
+    function fieldHtml(path, label, val, type) {
+      if (type === "textarea")
+        return `<div class="field"><label>${escHtml(label)}</label><textarea data-path="${path}" rows="3">${escHtml(val)}</textarea></div>`;
+      if (type === "lines")
+        return `<div class="field"><label>${escHtml(label)}</label><textarea data-path-list="${path}" rows="3">${escHtml((Array.isArray(val) ? val : []).join("\n"))}</textarea></div>`;
+      return `<div class="field"><label>${escHtml(label)}</label><input type="text" data-path="${path}" value="${escAttr(val)}"></div>`;
+    }
+
+    function itemsHtml(listPath, itemName, fields, arr) {
+      arr = Array.isArray(arr) ? arr : [];
+      const items = arr.map((item, i) => `
+        <div class="list-item">
+          <div class="list-item__bar">
+            <span class="list-item__n">${escHtml(itemName)} ${i + 1}</span>
+            <span class="list-item__ctrls">
+              <button type="button" data-action="up" data-list="${listPath}" data-index="${i}" title="Move up">↑</button>
+              <button type="button" data-action="down" data-list="${listPath}" data-index="${i}" title="Move down">↓</button>
+              <button type="button" class="del" data-action="del" data-list="${listPath}" data-index="${i}" title="Delete">✕</button>
+            </span>
+          </div>
+          ${fields.map((f) => fieldHtml(`${listPath}.${i}.${f.k}`, f.label, item[f.k], f.type)).join("")}
+        </div>`).join("");
+      return `<div class="list-items">${items}</div>
+        <button type="button" class="btn-mini" data-action="add" data-list="${listPath}">+ Add ${escHtml(itemName)}</button>`;
+    }
+
+    function buildEditor() {
+      let html = "";
       CONTENT_SCHEMA.forEach((grp) => {
-        const g = document.createElement("div");
-        g.className = "editor__group";
-        const h = document.createElement("h3");
-        h.textContent = grp.group;
-        g.appendChild(h);
-        grp.fields.forEach((f) => {
-          const wrap = document.createElement("div");
-          wrap.className = "field";
-          const lbl = document.createElement("label");
-          lbl.setAttribute("for", fieldId(f.path));
-          lbl.textContent = f.label;
-          const input = document.createElement(f.type === "textarea" ? "textarea" : "input");
-          input.id = fieldId(f.path);
-          input.dataset.path = f.path;
-          if (f.type !== "textarea") input.type = "text";
-          wrap.appendChild(lbl);
-          wrap.appendChild(input);
-          g.appendChild(wrap);
-        });
-        form.appendChild(g);
+        html += `<div class="editor__group"><h3>${escHtml(grp.group)}</h3>`;
+        grp.fields.forEach((f) => { html += fieldHtml(f.path, f.label, getPath(editorModel, f.path), f.type); });
+        html += `</div>`;
+      });
+      LIST_DEFS.forEach((def) => {
+        html += `<div class="editor__group"><h3>${escHtml(def.title)}</h3>${itemsHtml(def.path, def.itemName, def.fields, getPath(editorModel, def.path))}</div>`;
+      });
+      const sk = getPath(editorModel, "cards.skills") || {};
+      html += `<div class="editor__group"><h3>Skills &amp; Languages</h3>
+        ${fieldHtml("cards.skills.competencies", "Core competencies (one per line)", sk.competencies, "lines")}
+        <h4 class="sub-h">Tools &amp; analysis</h4>
+        ${itemsHtml("cards.skills.tools", "Tool", [{ k: "label", label: "Label", type: "text" }, { k: "pct", label: "Level % (0–100)", type: "text" }], sk.tools)}
+        <h4 class="sub-h">Languages</h4>
+        ${itemsHtml("cards.skills.languages.rows", "Language", [{ k: "name", label: "Language", type: "text" }, { k: "level", label: "Proficiency", type: "text" }], sk.languages && sk.languages.rows)}
+        ${fieldHtml("cards.skills.languages.note", "Languages note", getPath(editorModel, "cards.skills.languages.note"), "text")}
+      </div>`;
+      const cs = getPath(editorModel, "customSections") || [];
+      let csHtml = "";
+      cs.forEach((s, i) => {
+        csHtml += `<div class="list-item custom-sec">
+          <div class="list-item__bar">
+            <span class="list-item__n">Section ${i + 1}</span>
+            <span class="list-item__ctrls">
+              <button type="button" data-action="up" data-list="customSections" data-index="${i}" title="Move up">↑</button>
+              <button type="button" data-action="down" data-list="customSections" data-index="${i}" title="Move down">↓</button>
+              <button type="button" class="del" data-action="del" data-list="customSections" data-index="${i}" title="Delete section">✕</button>
+            </span>
+          </div>
+          ${fieldHtml(`customSections.${i}.title`, "Section title", s.title, "text")}
+          ${fieldHtml(`customSections.${i}.intro`, "Intro (optional)", s.intro, "textarea")}
+          <h4 class="sub-h">Cards</h4>
+          ${itemsHtml(`customSections.${i}.cards`, "Card", [{ k: "title", label: "Title", type: "text" }, { k: "subtitle", label: "Subtitle (optional)", type: "text" }, { k: "body", label: "Text", type: "textarea" }, { k: "bullets", label: "Bullets (one per line)", type: "lines" }], s.cards)}
+        </div>`;
+      });
+      html += `<div class="editor__group"><h3>Custom sections</h3>
+        <p class="field-help">Create your own sections with their own cards. They appear before the CV section.</p>
+        ${csHtml}
+        <button type="button" class="btn-mini" data-action="add" data-list="customSections">+ Add section</button>
+      </div>`;
+      $("#contentForm").innerHTML = html;
+    }
+
+    let editorWired = false;
+    function wireEditor() {
+      if (editorWired) return; editorWired = true;
+      const form = $("#contentForm");
+      form.addEventListener("input", (e) => {
+        const t = e.target;
+        if (t.dataset.pathList !== undefined) setPath(editorModel, t.dataset.pathList, t.value.split("\n"));
+        else if (t.dataset.path !== undefined) setPath(editorModel, t.dataset.path, t.value);
+      });
+      form.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-action]");
+        if (!btn) return;
+        e.preventDefault();
+        const action = btn.dataset.action, list = btn.dataset.list, idx = parseInt(btn.dataset.index, 10);
+        let arr = getPath(editorModel, list);
+        if (!Array.isArray(arr)) { arr = []; setPath(editorModel, list, arr); }
+        if (action === "add") arr.push(newItemFor(list));
+        else if (action === "del") arr.splice(idx, 1);
+        else if (action === "up" && idx > 0) { const t = arr[idx - 1]; arr[idx - 1] = arr[idx]; arr[idx] = t; }
+        else if (action === "down" && idx < arr.length - 1) { const t = arr[idx + 1]; arr[idx + 1] = arr[idx]; arr[idx] = t; }
+        buildEditor();
       });
     }
 
-    let editorLoaded = false;
     async function openEditor() {
       $("#dashHome").classList.add("hidden");
       $("#contentEditor").classList.remove("hidden");
-      if (!editorLoaded) { buildForm(); editorLoaded = true; }
-      $("#editorStatus").textContent = "Loading current content…";
       $("#editorStatus").className = "editor__status";
-
+      $("#editorStatus").textContent = "Loading current content…";
       let data = {};
       try {
         const snap = await getDoc(doc(db, "content", "site"));
         if (snap.exists()) data = snap.data();
       } catch (e) { /* use defaults */ }
-
-      // Populate: saved value, else default
-      CONTENT_SCHEMA.forEach((grp) => grp.fields.forEach((f) => {
-        const el = document.getElementById(fieldId(f.path));
-        const saved = getPath(data, f.path);
-        const def = getPath(CONTENT_DEFAULTS, f.path);
-        el.value = (saved != null && saved !== "") ? saved : (def != null ? def : "");
-      }));
+      editorModel = merge(clone(ALL_DEFAULTS), data);
+      wireEditor();
+      buildEditor();
+      $("#cvCurrentLink").setAttribute("href", (data.cv && data.cv.url) || "Dr-Sakara-Ajhor-CV.pdf");
       $("#editorStatus").textContent = "";
+    }
+
+    // CV upload → Cloudinary → store URL in content/site.cv.url
+    async function uploadToCloudinary(file) {
+      const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`;
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", CLOUDINARY.uploadPreset);
+      const res = await fetch(url, { method: "POST", body: fd });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error && json.error.message ? json.error.message : "Upload failed");
+      return json.secure_url;
+    }
+
+    async function uploadCv() {
+      const fileEl = $("#cvFile"), btn = $("#cvUploadBtn"), status = $("#cvStatus");
+      const file = fileEl.files && fileEl.files[0];
+      if (!file) { status.className = "editor__status err"; status.textContent = "Choose a PDF first."; return; }
+      btn.disabled = true;
+      status.className = "editor__status";
+      status.textContent = "Uploading…";
+      try {
+        const url = await uploadToCloudinary(file);
+        await setDoc(doc(db, "content", "site"), { cv: { url } }, { merge: true });
+        if (editorModel && typeof editorModel === "object") editorModel.cv = { url };
+        $("#cvCurrentLink").setAttribute("href", url);
+        status.className = "editor__status ok";
+        status.textContent = "CV updated — live on the site.";
+        fileEl.value = "";
+      } catch (e) {
+        status.className = "editor__status err";
+        status.textContent = "Upload failed: " + (e.message || e);
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     function closeEditor() {
@@ -367,12 +558,8 @@
       btn.disabled = true;
       status.className = "editor__status";
       status.textContent = "Saving…";
-      const out = {};
-      $("#contentForm").querySelectorAll("[data-path]").forEach((el) => {
-        setPath(out, el.dataset.path, el.value.trim());
-      });
       try {
-        await setDoc(doc(db, "content", "site"), out, { merge: true });
+        await setDoc(doc(db, "content", "site"), editorModel, { merge: true });
         status.className = "editor__status ok";
         status.textContent = "Saved — live on the site.";
       } catch (e) {
@@ -387,6 +574,7 @@
     $("#tileContent").addEventListener("click", openEditor);
     $("#editorBack").addEventListener("click", closeEditor);
     $("#editorSave").addEventListener("click", saveContent);
+    $("#cvUploadBtn").addEventListener("click", uploadCv);
   </script>
 </body>
 </html>

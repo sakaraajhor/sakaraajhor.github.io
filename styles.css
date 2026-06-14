@@ -297,6 +297,9 @@ img { max-width: 100%; display: block; }
 .quote svg { color: var(--gold); margin-bottom: 12px; }
 .quote p { font-family: var(--serif); font-size: 1.4rem; line-height: 1.4; color: var(--teal-800); font-style: italic; }
 
+/* ---------- Custom sections ---------- */
+.custom-intro { color: var(--muted); max-width: 62ch; margin: -24px 0 30px; font-size: 1.05rem; }
+
 /* ---------- CV download band ---------- */
 .cv-band {
   position: relative; overflow: hidden;
