@@ -46,6 +46,9 @@ body {
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
 
+/* the hidden attribute must always win over display rules */
+[hidden] { display: none !important; }
+
 ::selection { background: var(--gold-soft); color: var(--teal-900); }
 
 /* ---------- Scroll progress ---------- */
@@ -387,9 +390,13 @@ a.contact__card:hover { background: rgba(255,255,255,0.12); transform: translate
 .chat__signin svg { color: var(--teal-500); }
 .chat__messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
 .chat__empty { color: var(--muted); font-size: 0.9rem; text-align: center; margin: auto 0; }
-.chat__msg { max-width: 78%; padding: 10px 14px; border-radius: 16px; font-size: 0.92rem; line-height: 1.45; word-wrap: break-word; white-space: pre-wrap; }
-.chat__msg--me { align-self: flex-end; background: var(--teal-700); color: var(--ivory); border-bottom-right-radius: 5px; }
-.chat__msg--them { align-self: flex-start; background: var(--white); border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 5px; }
+.chat__row { display: flex; width: 100%; }
+.chat__row--me { justify-content: flex-end; }
+.chat__row--them { justify-content: flex-start; }
+.chat__msg { max-width: 78%; padding: 10px 14px; border-radius: 16px; font-size: 0.92rem; line-height: 1.45; word-wrap: break-word; overflow-wrap: anywhere; white-space: pre-wrap; }
+.chat__msg--me { background: var(--teal-700); color: var(--ivory); border-bottom-right-radius: 5px; }
+.chat__msg--them { background: var(--white); border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 5px; }
+[data-theme="dark"] .chat__msg--me { background: var(--teal-500); color: #06181d; }
 
 .chat__inputbar { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); background: var(--cream); }
 .chat__inputbar input {

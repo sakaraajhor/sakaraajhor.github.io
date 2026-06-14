@@ -654,7 +654,7 @@
         if (snap.empty) { box.innerHTML = '<p class="inbox__empty">No messages.</p>'; return; }
         box.innerHTML = snap.docs.map((d) => {
           const m = d.data(); const me = m.senderRole === "admin";
-          return `<div class="chat__msg ${me ? "chat__msg--me" : "chat__msg--them"}">${escHtml(m.text)}</div>`;
+          return `<div class="chat__row ${me ? "chat__row--me" : "chat__row--them"}"><div class="chat__msg ${me ? "chat__msg--me" : "chat__msg--them"}">${escHtml(m.text)}</div></div>`;
         }).join("");
         box.scrollTop = box.scrollHeight;
       });

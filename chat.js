@@ -56,7 +56,7 @@ function renderMessages(docs) {
   messagesView.innerHTML = docs
     .map((m) => {
       const mine = m.senderRole !== "admin";
-      return `<div class="chat__msg ${mine ? "chat__msg--me" : "chat__msg--them"}">${esc(m.text)}</div>`;
+      return `<div class="chat__row ${mine ? "chat__row--me" : "chat__row--them"}"><div class="chat__msg ${mine ? "chat__msg--me" : "chat__msg--them"}">${esc(m.text)}</div></div>`;
     })
     .join("");
   scrollToBottom();
