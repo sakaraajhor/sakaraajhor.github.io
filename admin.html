@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=2" />
-  <link rel="stylesheet" href="admin.css?v=2" />
+  <link rel="stylesheet" href="styles.css?v=3" />
+  <link rel="stylesheet" href="admin.css?v=3" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230f4c5c'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='52' fill='%23e9c46a' text-anchor='middle'%3ESA%3C/text%3E%3C/svg%3E" />
   <script>
     (function () {
@@ -107,12 +107,11 @@
           <h3>Messages</h3>
           <p>Chat with visitors in real time.</p>
         </button>
-        <div class="tile">
-          <div class="tile__soon">Phase 6</div>
+        <button class="tile tile--active" id="tileAnalytics" type="button">
           <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div>
           <h3>Analytics</h3>
           <p>Visits, link clicks, and engagement KPIs.</p>
-        </div>
+        </button>
 
         <!-- Engineer-only: hidden from the doctor -->
         <div class="tile tile--engineer hidden" id="engineerTile">
@@ -185,13 +184,32 @@
         </div>
       </section>
 
+      <!-- Analytics -->
+      <section id="analytics" class="analytics hidden">
+        <div class="editor__head">
+          <button class="btn-text" id="analyticsBack" type="button">← Back</button>
+          <h2>Analytics</h2>
+          <span></span>
+        </div>
+        <p class="editor__hint">Live engagement metrics, updated in real time.</p>
+        <div class="kpis">
+          <div class="kpi"><span class="kpi__label">Page views</span><span class="kpi__num" id="kpiVisits">—</span></div>
+          <div class="kpi"><span class="kpi__label">Chats opened</span><span class="kpi__num" id="kpiChatOpens">—</span></div>
+          <div class="kpi"><span class="kpi__label">CV downloads</span><span class="kpi__num" id="kpiCvDownloads">—</span></div>
+          <div class="kpi"><span class="kpi__label">Email clicks</span><span class="kpi__num" id="kpiLinkEmail">—</span></div>
+          <div class="kpi"><span class="kpi__label">Phone clicks</span><span class="kpi__num" id="kpiLinkPhone">—</span></div>
+          <div class="kpi"><span class="kpi__label">LinkedIn clicks</span><span class="kpi__num" id="kpiLinkLinkedin">—</span></div>
+        </div>
+        <p class="analytics__note" id="analyticsUpdated"></p>
+      </section>
+
     </div>
 
   </main>
 
-  <script src="theme.js?v=2"></script>
+  <script src="theme.js?v=3"></script>
   <script type="module">
-    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js?v=2";
+    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js?v=3";
     import {
       onAuthStateChanged, signInWithPopup, signOut
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -687,6 +705,33 @@
     function closeInbox() { $("#inbox").classList.add("hidden"); $("#dashHome").classList.remove("hidden"); }
     $("#tileMessages").addEventListener("click", openInbox);
     $("#inboxBack").addEventListener("click", closeInbox);
+
+    // ----------------------------------------------------------
+    //  Analytics (Phase 6)
+    // ----------------------------------------------------------
+    let analyticsUnsub = null;
+    const KPI_FIELDS = ["visits", "chatOpens", "cvDownloads", "linkEmail", "linkPhone", "linkLinkedin"];
+    const KPI_IDS = {
+      visits: "kpiVisits", chatOpens: "kpiChatOpens", cvDownloads: "kpiCvDownloads",
+      linkEmail: "kpiLinkEmail", linkPhone: "kpiLinkPhone", linkLinkedin: "kpiLinkLinkedin",
+    };
+
+    function openAnalytics() {
+      $("#dashHome").classList.add("hidden");
+      $("#analytics").classList.remove("hidden");
+      if (!analyticsUnsub) {
+        analyticsUnsub = onSnapshot(doc(db, "analytics", "summary"), (snap) => {
+          const d = snap.exists() ? snap.data() : {};
+          KPI_FIELDS.forEach((f) => { $("#" + KPI_IDS[f]).textContent = (d[f] || 0).toLocaleString(); });
+          if (d.updatedAt && d.updatedAt.toDate) {
+            $("#analyticsUpdated").textContent = "Last activity: " + d.updatedAt.toDate().toLocaleString();
+          }
+        }, (err) => { $("#analyticsUpdated").textContent = "Error: " + err.message; });
+      }
+    }
+    function closeAnalytics() { $("#analytics").classList.add("hidden"); $("#dashHome").classList.remove("hidden"); }
+    $("#tileAnalytics").addEventListener("click", openAnalytics);
+    $("#analyticsBack").addEventListener("click", closeAnalytics);
   </script>
 </body>
 </html>
