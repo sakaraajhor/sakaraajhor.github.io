@@ -350,6 +350,64 @@ a.contact__card:hover { background: rgba(255,255,255,0.12); transform: translate
 .footer__admin { font-size: 0.82rem; color: rgba(247,243,236,0.4); transition: color 0.25s; }
 .footer__admin:hover { color: var(--gold-soft); }
 
+/* ---------- Chat widget ---------- */
+.chat { position: fixed; right: 24px; bottom: 24px; z-index: 150; }
+.chat__fab {
+  width: 60px; height: 60px; border-radius: 50%; border: 0; cursor: pointer;
+  background: linear-gradient(135deg, var(--teal-700), var(--teal-800)); color: var(--gold-soft);
+  display: grid; place-items: center; box-shadow: 0 12px 30px rgba(11,58,69,0.35);
+  transition: transform 0.25s var(--ease);
+}
+.chat__fab:hover { transform: translateY(-3px) scale(1.04); }
+.chat__fab svg { width: 26px; height: 26px; position: absolute; transition: opacity 0.2s, transform 0.2s; }
+.chat__fab-close { opacity: 0; transform: rotate(-90deg); }
+.chat__fab--open .chat__fab-open { opacity: 0; transform: rotate(90deg); }
+.chat__fab--open .chat__fab-close { opacity: 1; transform: rotate(0); }
+
+.chat__panel {
+  position: absolute; right: 0; bottom: 74px; width: min(370px, calc(100vw - 32px));
+  height: min(540px, calc(100vh - 120px));
+  background: var(--cream); border: 1px solid var(--line); border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(11,58,69,0.28); display: flex; flex-direction: column; overflow: hidden;
+  animation: chatIn 0.28s var(--ease);
+}
+@keyframes chatIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: none; } }
+.chat__header {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 18px; background: linear-gradient(135deg, var(--teal-800), var(--teal-900)); color: var(--ivory);
+}
+.chat__header-info { display: flex; flex-direction: column; }
+.chat__title { font-family: var(--serif); font-size: 1.25rem; font-weight: 600; }
+.chat__sub { font-size: 0.76rem; color: rgba(247,243,236,0.7); }
+.chat__close { background: none; border: 0; color: rgba(247,243,236,0.8); font-size: 1.1rem; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+.chat__close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+.chat__body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.chat__signin { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 30px; text-align: center; color: var(--muted); }
+.chat__signin svg { color: var(--teal-500); }
+.chat__messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.chat__empty { color: var(--muted); font-size: 0.9rem; text-align: center; margin: auto 0; }
+.chat__msg { max-width: 78%; padding: 10px 14px; border-radius: 16px; font-size: 0.92rem; line-height: 1.45; word-wrap: break-word; white-space: pre-wrap; }
+.chat__msg--me { align-self: flex-end; background: var(--teal-700); color: var(--ivory); border-bottom-right-radius: 5px; }
+.chat__msg--them { align-self: flex-start; background: var(--white); border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 5px; }
+
+.chat__inputbar { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); background: var(--cream); }
+.chat__inputbar input {
+  flex: 1; border: 1px solid var(--line); border-radius: 999px; padding: 11px 16px;
+  font-family: var(--sans); font-size: 0.92rem; color: var(--ink); background: var(--white);
+}
+.chat__inputbar input:focus { outline: none; border-color: var(--teal-500); }
+.chat__inputbar button {
+  width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 50%; cursor: pointer;
+  background: var(--gold); color: var(--teal-900); display: grid; place-items: center; transition: 0.2s var(--ease);
+}
+.chat__inputbar button:hover { transform: scale(1.06); }
+
+@media (max-width: 600px) {
+  .chat { right: 16px; bottom: 16px; }
+  .chat__panel { bottom: 70px; }
+}
+
 /* ---------- Reveal animation ---------- */
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
 .reveal.visible { opacity: 1; transform: none; }

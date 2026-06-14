@@ -202,4 +202,56 @@ button.tile { font: inherit; text-align: left; cursor: pointer; color: inherit; 
   border-radius: 8px; padding: 8px 14px; margin-right: 12px;
 }
 
+/* Tile badge */
+.tile__badge {
+  position: absolute; top: 14px; right: 14px; min-width: 22px; height: 22px; padding: 0 6px;
+  border-radius: 999px; background: #c0392b; color: #fff; font-size: 0.72rem; font-weight: 700;
+  display: grid; place-items: center;
+}
+
+/* Inbox */
+.inbox { max-width: 940px; }
+.inbox__grid { display: grid; grid-template-columns: 300px 1fr; gap: 18px; height: min(620px, 70vh); }
+.inbox__list {
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+  overflow-y: auto; padding: 8px;
+}
+.inbox__empty { color: var(--muted); font-size: 0.9rem; padding: 20px; text-align: center; }
+.conv {
+  width: 100%; text-align: left; display: flex; gap: 11px; align-items: center;
+  background: none; border: 0; cursor: pointer; padding: 11px; border-radius: 12px; transition: background 0.2s;
+}
+.conv:hover { background: rgba(127,127,127,0.08); }
+.conv--active { background: rgba(42,138,158,0.12); }
+.conv img { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; background: var(--line); object-fit: cover; }
+.conv__info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.conv__top { display: flex; align-items: center; gap: 7px; }
+.conv__name { font-weight: 600; color: var(--teal-900); font-size: 0.92rem; }
+.conv__dot { width: 8px; height: 8px; border-radius: 50%; background: #c0392b; flex-shrink: 0; }
+.conv__last { font-size: 0.82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.inbox__pane { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; }
+.inbox__placeholder { margin: auto; color: var(--muted); padding: 30px; text-align: center; }
+.inbox__thread { display: flex; flex-direction: column; height: 100%; }
+.inbox__thread-head { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; }
+.inbox__thread-head strong { color: var(--teal-900); }
+.inbox__thread-head span { font-size: 0.82rem; color: var(--muted); }
+.inbox__messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.inbox__inputbar { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
+.inbox__inputbar input {
+  flex: 1; border: 1px solid var(--line); border-radius: 999px; padding: 11px 16px;
+  font-family: var(--sans); font-size: 0.92rem; color: var(--ink); background: var(--cream);
+}
+.inbox__inputbar input:focus { outline: none; border-color: var(--teal-500); }
+.inbox__inputbar button {
+  border: 0; border-radius: 999px; padding: 0 20px; cursor: pointer;
+  background: var(--gold); color: var(--teal-900); font-family: var(--sans); font-weight: 700; font-size: 0.9rem;
+}
+
+@media (max-width: 700px) {
+  .inbox__grid { grid-template-columns: 1fr; height: auto; }
+  .inbox__list { max-height: 200px; }
+  .inbox__pane { min-height: 380px; }
+}
+
 .hidden { display: none !important; }

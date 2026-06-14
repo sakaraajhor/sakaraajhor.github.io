@@ -101,12 +101,12 @@
           <h3>Blog &amp; Research</h3>
           <p>Write posts and add research entries with images.</p>
         </div>
-        <div class="tile">
-          <div class="tile__soon">Phase 4</div>
+        <button class="tile tile--active" id="tileMessages" type="button">
+          <span class="tile__badge hidden" id="msgBadge">0</span>
           <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg></div>
           <h3>Messages</h3>
           <p>Chat with visitors in real time.</p>
-        </div>
+        </button>
         <div class="tile">
           <div class="tile__soon">Phase 6</div>
           <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div>
@@ -160,6 +160,31 @@
         </div>
       </section>
 
+      <!-- Messages inbox -->
+      <section id="inbox" class="inbox hidden">
+        <div class="editor__head">
+          <button class="btn-text" id="inboxBack" type="button">← Back</button>
+          <h2>Messages</h2>
+          <span></span>
+        </div>
+        <div class="inbox__grid">
+          <aside class="inbox__list" id="convList">
+            <p class="inbox__empty">No conversations yet.</p>
+          </aside>
+          <div class="inbox__pane" id="convPane">
+            <div class="inbox__placeholder" id="convPlaceholder">Select a conversation to view messages.</div>
+            <div class="inbox__thread hidden" id="convThread">
+              <div class="inbox__thread-head" id="convHead"></div>
+              <div class="inbox__messages" id="convMessages"></div>
+              <form class="inbox__inputbar" id="replyForm">
+                <input id="replyInput" placeholder="Type a reply…" autocomplete="off" maxlength="2000" />
+                <button type="submit">Send</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
 
   </main>
@@ -171,7 +196,8 @@
       onAuthStateChanged, signInWithPopup, signOut
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import {
-      doc, getDoc, setDoc
+      doc, getDoc, setDoc, updateDoc, collection, addDoc, query, orderBy,
+      onSnapshot, serverTimestamp, increment
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
     const $ = (s) => document.querySelector(s);
@@ -243,6 +269,7 @@
       badge.className = "role-badge role-badge--" + role;
       $("#engineerTile").classList.toggle("hidden", role !== "engineer");
       show("dash");
+      subscribeConversations();
     });
 
     // ----------------------------------------------------------
@@ -575,6 +602,91 @@
     $("#editorBack").addEventListener("click", closeEditor);
     $("#editorSave").addEventListener("click", saveContent);
     $("#cvUploadBtn").addEventListener("click", uploadCv);
+
+    // ----------------------------------------------------------
+    //  Messages inbox (Phase 4)
+    // ----------------------------------------------------------
+    let convUnsub = null, msgUnsub = null, currentConv = null;
+    const convData = {};
+
+    function updateBadge(n) {
+      const b = $("#msgBadge");
+      if (n > 0) { b.textContent = n > 9 ? "9+" : n; b.classList.remove("hidden"); }
+      else b.classList.add("hidden");
+    }
+
+    function subscribeConversations() {
+      if (convUnsub) return;
+      const q = query(collection(db, "conversations"), orderBy("lastMessageAt", "desc"));
+      convUnsub = onSnapshot(q, (snap) => {
+        const list = $("#convList");
+        if (snap.empty) { list.innerHTML = '<p class="inbox__empty">No conversations yet.</p>'; updateBadge(0); return; }
+        let unread = 0, html = "";
+        snap.docs.forEach((d) => {
+          const c = d.data(); convData[d.id] = c;
+          const isUnread = (c.unreadAdmin || 0) > 0;
+          if (isUnread) unread++;
+          html += `<button type="button" class="conv${currentConv === d.id ? " conv--active" : ""}" data-cid="${d.id}">
+            <img src="${escAttr(c.visitorPhoto || "")}" alt="" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'"/>
+            <span class="conv__info">
+              <span class="conv__top"><span class="conv__name">${escHtml(c.visitorName || "Visitor")}</span>${isUnread ? '<span class="conv__dot"></span>' : ""}</span>
+              <span class="conv__last">${escHtml(c.lastMessage || "No messages yet")}</span>
+            </span>
+          </button>`;
+        });
+        list.innerHTML = html;
+        updateBadge(unread);
+      }, (err) => { $("#convList").innerHTML = `<p class="inbox__empty">Error: ${escHtml(err.message)}</p>`; });
+    }
+
+    function selectConversation(cid) {
+      currentConv = cid;
+      $("#convPlaceholder").classList.add("hidden");
+      $("#convThread").classList.remove("hidden");
+      $("#convList").querySelectorAll(".conv").forEach((el) => el.classList.toggle("conv--active", el.dataset.cid === cid));
+      const c = convData[cid] || {};
+      $("#convHead").innerHTML = `<strong>${escHtml(c.visitorName || "Visitor")}</strong><span>${escHtml(c.visitorEmail || "")}</span>`;
+      updateDoc(doc(db, "conversations", cid), { unreadAdmin: 0 }).catch(() => {});
+      if (msgUnsub) msgUnsub();
+      const q = query(collection(db, "conversations", cid, "messages"), orderBy("ts", "asc"));
+      msgUnsub = onSnapshot(q, (snap) => {
+        const box = $("#convMessages");
+        if (snap.empty) { box.innerHTML = '<p class="inbox__empty">No messages.</p>'; return; }
+        box.innerHTML = snap.docs.map((d) => {
+          const m = d.data(); const me = m.senderRole === "admin";
+          return `<div class="chat__msg ${me ? "chat__msg--me" : "chat__msg--them"}">${escHtml(m.text)}</div>`;
+        }).join("");
+        box.scrollTop = box.scrollHeight;
+      });
+    }
+
+    $("#convList").addEventListener("click", (e) => {
+      const b = e.target.closest(".conv");
+      if (b) selectConversation(b.dataset.cid);
+    });
+
+    $("#replyForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const inp = $("#replyInput");
+      const text = inp.value.trim();
+      if (!text || !currentConv) return;
+      inp.value = "";
+      const cid = currentConv;
+      try {
+        await addDoc(collection(db, "conversations", cid, "messages"), {
+          senderUid: auth.currentUser.uid, senderRole: "admin", text, ts: serverTimestamp(),
+        });
+        await updateDoc(doc(db, "conversations", cid), {
+          lastMessage: text, lastMessageAt: serverTimestamp(), lastSender: "admin",
+          unreadVisitor: increment(1), unreadAdmin: 0,
+        });
+      } catch (err) { inp.value = text; alert("Couldn't send: " + (err.message || err)); }
+    });
+
+    function openInbox() { $("#dashHome").classList.add("hidden"); $("#inbox").classList.remove("hidden"); }
+    function closeInbox() { $("#inbox").classList.add("hidden"); $("#dashHome").classList.remove("hidden"); }
+    $("#tileMessages").addEventListener("click", openInbox);
+    $("#inboxBack").addEventListener("click", closeInbox);
   </script>
 </body>
 </html>
