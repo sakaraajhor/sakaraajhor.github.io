@@ -6,7 +6,7 @@
 //  the site never breaks.
 // ============================================================
 
-import { db } from "./firebase-config.js";
+import { db } from "./firebase-config.js?v=2";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 function getPath(obj, path) {
