@@ -190,6 +190,17 @@ button.tile { font: inherit; text-align: left; cursor: pointer; color: inherit; 
 }
 .btn-mini:hover { background: rgba(42,138,158,0.18); }
 
+/* Image field */
+.img-field { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.img-field__preview { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+.img-field__empty { font-size: 0.82rem; color: var(--muted); font-style: italic; }
+.img-field__file { font-size: 0.82rem; color: var(--ink); max-width: 190px; }
+.img-field__file::file-selector-button {
+  font-family: var(--sans); font-weight: 600; font-size: 0.8rem; cursor: pointer;
+  background: var(--cream); color: var(--teal-900); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 12px; margin-right: 10px;
+}
+
 /* CV upload */
 .field-help { color: var(--muted); font-size: 0.88rem; margin-bottom: 12px; }
 .cv-current { font-size: 0.9rem; color: var(--ink); margin-bottom: 14px; }
@@ -285,5 +296,41 @@ button.tile { font: inherit; text-align: left; cursor: pointer; color: inherit; 
 .bar-row__track { height: 12px; background: rgba(15,76,92,0.1); border-radius: 999px; overflow: hidden; }
 .bar-row__track i { display: block; height: 100%; background: linear-gradient(90deg, var(--teal-700), var(--gold)); border-radius: 999px; transition: width 0.6s var(--ease); }
 .bar-row__val { font-size: 0.9rem; font-weight: 700; color: var(--teal-900); text-align: right; }
+
+/* Surprise cards */
+.surprise-compose { max-width: 880px; }
+.surprise-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; }
+.surprise-form { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); }
+.surprise-preview { position: sticky; top: 90px; }
+.su-preview-label { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; color: var(--muted); margin-bottom: 12px; }
+
+.su-card { position: relative; overflow: hidden; border-radius: 22px; padding: 40px 32px; text-align: center; color: #fff; box-shadow: var(--shadow-md); }
+.su-card--gold { background: linear-gradient(135deg, #e8bf6f, #c98a2e); color: #3a2a08; }
+.su-card--teal { background: linear-gradient(135deg, #2a8a9e, #0f4c5c); }
+.su-card--rose { background: linear-gradient(135deg, #e76f8a, #b23a5b); }
+.su-card--violet { background: linear-gradient(135deg, #9b7ede, #5e3fa6); }
+.su-card__emoji { font-size: 3.4rem; line-height: 1; margin-bottom: 14px; }
+.su-card__title { font-family: var(--serif); font-size: 2rem; font-weight: 600; margin-bottom: 10px; }
+.su-card__msg { font-size: 1.05rem; line-height: 1.5; white-space: pre-wrap; opacity: 0.95; }
+
+/* Reveal overlay */
+.su-overlay { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 24px; background: rgba(8,25,30,0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.su-card--reveal { max-width: 440px; width: 100%; z-index: 2; animation: suPop 0.55s var(--ease); }
+.su-card--reveal .btn-save { margin-top: 24px; background: rgba(255,255,255,0.92); color: #1a1a1a; }
+.su-card--reveal .btn-save:hover { background: #fff; }
+@keyframes suPop { 0% { opacity: 0; transform: scale(0.8) translateY(24px); } 60% { transform: scale(1.03); } 100% { opacity: 1; transform: none; } }
+
+.su-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+.su-confetti span { position: absolute; top: -20px; width: 10px; height: 14px; border-radius: 2px; animation-name: suFall; animation-timing-function: linear; animation-iteration-count: infinite; }
+@keyframes suFall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(102vh) rotate(720deg); opacity: 0.85; } }
+
+@media (max-width: 700px) {
+  .surprise-grid { grid-template-columns: 1fr; }
+  .surprise-preview { position: static; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .su-card--reveal { animation: none; }
+  .su-confetti span { animation: none; display: none; }
+}
 
 .hidden { display: none !important; }

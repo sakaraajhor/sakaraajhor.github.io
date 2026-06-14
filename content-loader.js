@@ -6,7 +6,7 @@
 //  the site never breaks.
 // ============================================================
 
-import { db } from "./firebase-config.js?v=4";
+import { db } from "./firebase-config.js?v=6";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 function getPath(obj, path) {
@@ -58,6 +58,7 @@ function renderResearch(items) {
         .join("");
       return `
       <article class="card${i === 0 ? " card--feature" : ""}">
+        ${c.image ? `<img class="card__img" src="${esc(c.image)}" alt="" loading="lazy">` : ""}
         <div class="card__icon" aria-hidden="true">${RESEARCH_ICON}</div>
         ${c.period ? `<span class="card__period">${esc(c.period)}</span>` : ""}
         <h3>${esc(c.title)}</h3>
@@ -137,6 +138,7 @@ function renderCustomSections(sections) {
             .join("");
           return `
           <article class="card">
+            ${c.image ? `<img class="card__img" src="${esc(c.image)}" alt="" loading="lazy">` : ""}
             <h3>${esc(c.title)}</h3>
             ${c.subtitle ? `<p class="card__period">${esc(c.subtitle)}</p>` : ""}
             ${c.body ? `<p class="card__sub">${esc(c.body)}</p>` : ""}
