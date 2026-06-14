@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=3" />
-  <link rel="stylesheet" href="admin.css?v=3" />
+  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="stylesheet" href="admin.css?v=4" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230f4c5c'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='52' fill='%23e9c46a' text-anchor='middle'%3ESA%3C/text%3E%3C/svg%3E" />
   <script>
     (function () {
@@ -200,6 +200,17 @@
           <div class="kpi"><span class="kpi__label">Phone clicks</span><span class="kpi__num" id="kpiLinkPhone">—</span></div>
           <div class="kpi"><span class="kpi__label">LinkedIn clicks</span><span class="kpi__num" id="kpiLinkLinkedin">—</span></div>
         </div>
+
+        <div class="chart-card">
+          <h3 class="chart-card__title">Page views — last 14 days</h3>
+          <div id="chartVisits" class="chart"></div>
+        </div>
+
+        <div class="chart-card">
+          <h3 class="chart-card__title">Interactions breakdown</h3>
+          <div id="chartBreakdown" class="chart chart--bars"></div>
+        </div>
+
         <p class="analytics__note" id="analyticsUpdated"></p>
       </section>
 
@@ -207,9 +218,9 @@
 
   </main>
 
-  <script src="theme.js?v=3"></script>
+  <script src="theme.js?v=4"></script>
   <script type="module">
-    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js?v=3";
+    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js?v=4";
     import {
       onAuthStateChanged, signInWithPopup, signOut
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -716,18 +727,93 @@
       linkEmail: "kpiLinkEmail", linkPhone: "kpiLinkPhone", linkLinkedin: "kpiLinkLinkedin",
     };
 
+    function lastNDates(n) {
+      const out = [], base = new Date();
+      for (let i = n - 1; i >= 0; i--) {
+        const x = new Date(base); x.setUTCDate(base.getUTCDate() - i);
+        out.push(x.toISOString().slice(0, 10));
+      }
+      return out;
+    }
+
+    function renderLineChart(el, data) {
+      const W = 640, H = 200, P = 28;
+      const max = Math.max(1, ...data.map((d) => d.value));
+      const n = data.length;
+      const xx = (i) => P + (i * (W - 2 * P)) / (n - 1 || 1);
+      const yy = (v) => H - P - (v / max) * (H - 2 * P);
+      const line = data.map((d, i) => `${xx(i).toFixed(1)},${yy(d.value).toFixed(1)}`).join(" ");
+      const area = `M${xx(0).toFixed(1)},${H - P} L` +
+        data.map((d, i) => `${xx(i).toFixed(1)},${yy(d.value).toFixed(1)}`).join(" L") +
+        ` L${xx(n - 1).toFixed(1)},${H - P} Z`;
+      const step = Math.ceil(n / 6);
+      const xlabels = data.map((d, i) => (i % step === 0 || i === n - 1)
+        ? `<text x="${xx(i).toFixed(1)}" y="${H - 8}" class="chart-x">${d.label}</text>` : "").join("");
+      const dots = data.map((d, i) => `<circle cx="${xx(i).toFixed(1)}" cy="${yy(d.value).toFixed(1)}" r="2.5" class="chart-dot"><title>${d.label}: ${d.value}</title></circle>`).join("");
+      el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img">
+        <line x1="${P}" y1="${H - P}" x2="${W - P}" y2="${H - P}" class="chart-axis"/>
+        <text x="${P}" y="16" class="chart-max">peak ${max}</text>
+        <path d="${area}" class="chart-area"/>
+        <polyline points="${line}" class="chart-line"/>
+        ${dots}${xlabels}
+      </svg>`;
+    }
+
+    function renderBars(el, items) {
+      const max = Math.max(1, ...items.map((i) => i.value));
+      el.innerHTML = items.map((i) => `
+        <div class="bar-row">
+          <span class="bar-row__label">${escHtml(i.label)}</span>
+          <span class="bar-row__track"><i style="width:${(i.value / max * 100).toFixed(1)}%"></i></span>
+          <span class="bar-row__val">${i.value.toLocaleString()}</span>
+        </div>`).join("");
+    }
+
+    let lastSummary = {};
+    async function loadCharts() {
+      // Interactions breakdown (from running totals)
+      renderBars($("#chartBreakdown"), [
+        { label: "CV downloads", value: lastSummary.cvDownloads || 0 },
+        { label: "Chats opened", value: lastSummary.chatOpens || 0 },
+        { label: "Email", value: lastSummary.linkEmail || 0 },
+        { label: "LinkedIn", value: lastSummary.linkLinkedin || 0 },
+        { label: "Phone", value: lastSummary.linkPhone || 0 },
+      ]);
+      // Page views over last 14 days
+      const days = lastNDates(14);
+      try {
+        const snaps = await Promise.all(days.map((day) => getDoc(doc(db, "analyticsDaily", day))));
+        const series = days.map((day, i) => ({
+          label: day.slice(5),
+          value: snaps[i].exists() ? (snaps[i].data().visits || 0) : 0,
+        }));
+        renderLineChart($("#chartVisits"), series);
+      } catch (e) {
+        $("#chartVisits").innerHTML = `<p class="inbox__empty">Couldn't load chart: ${escHtml(e.message)}</p>`;
+      }
+    }
+
     function openAnalytics() {
       $("#dashHome").classList.add("hidden");
       $("#analytics").classList.remove("hidden");
       if (!analyticsUnsub) {
         analyticsUnsub = onSnapshot(doc(db, "analytics", "summary"), (snap) => {
           const d = snap.exists() ? snap.data() : {};
+          lastSummary = d;
           KPI_FIELDS.forEach((f) => { $("#" + KPI_IDS[f]).textContent = (d[f] || 0).toLocaleString(); });
           if (d.updatedAt && d.updatedAt.toDate) {
             $("#analyticsUpdated").textContent = "Last activity: " + d.updatedAt.toDate().toLocaleString();
           }
+          renderBars($("#chartBreakdown"), [
+            { label: "CV downloads", value: d.cvDownloads || 0 },
+            { label: "Chats opened", value: d.chatOpens || 0 },
+            { label: "Email", value: d.linkEmail || 0 },
+            { label: "LinkedIn", value: d.linkLinkedin || 0 },
+            { label: "Phone", value: d.linkPhone || 0 },
+          ]);
         }, (err) => { $("#analyticsUpdated").textContent = "Error: " + err.message; });
       }
+      loadCharts();
     }
     function closeAnalytics() { $("#analytics").classList.add("hidden"); $("#dashHome").classList.remove("hidden"); }
     $("#tileAnalytics").addEventListener("click", openAnalytics);

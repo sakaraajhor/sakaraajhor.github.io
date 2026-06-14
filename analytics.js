@@ -5,16 +5,19 @@
 //  fixed set of numeric counter fields (see Firestore rules).
 // ============================================================
 
-import { db } from "./firebase-config.js?v=3";
+import { db } from "./firebase-config.js?v=4";
 import {
   doc, setDoc, increment, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 const ref = doc(db, "analytics", "summary");
+const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+const dailyRef = doc(db, "analyticsDaily", today);
 
 function bump(field) {
-  setDoc(ref, { [field]: increment(1), updatedAt: serverTimestamp() }, { merge: true })
-    .catch(() => {});
+  const payload = { [field]: increment(1), updatedAt: serverTimestamp() };
+  setDoc(ref, payload, { merge: true }).catch(() => {});      // running totals
+  setDoc(dailyRef, payload, { merge: true }).catch(() => {}); // per-day for charts
 }
 
 // Page view (once per load)

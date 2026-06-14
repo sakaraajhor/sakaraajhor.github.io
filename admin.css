@@ -265,4 +265,25 @@ button.tile { font: inherit; text-align: left; cursor: pointer; color: inherit; 
 .kpi__num { font-family: var(--serif); font-size: 2.6rem; font-weight: 600; color: var(--teal-900); line-height: 1; }
 .analytics__note { color: var(--muted); font-size: 0.85rem; margin-top: 22px; }
 
+/* Charts */
+.chart-card {
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 22px 24px; box-shadow: var(--shadow-sm); margin-top: 22px;
+}
+.chart-card__title { font-family: var(--serif); font-size: 1.2rem; color: var(--teal-900); font-weight: 600; margin-bottom: 16px; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart-area { fill: rgba(42,138,158,0.14); stroke: none; }
+.chart-line { fill: none; stroke: var(--teal-500); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.chart-dot { fill: var(--teal-700); }
+.chart-axis { stroke: var(--line); stroke-width: 1; }
+.chart-x { fill: var(--muted); font-size: 11px; text-anchor: middle; font-family: var(--sans); }
+.chart-max { fill: var(--gold); font-size: 11px; font-weight: 700; font-family: var(--sans); }
+
+.chart--bars { display: flex; flex-direction: column; gap: 12px; }
+.bar-row { display: grid; grid-template-columns: 110px 1fr 48px; align-items: center; gap: 12px; }
+.bar-row__label { font-size: 0.85rem; color: var(--teal-900); font-weight: 500; }
+.bar-row__track { height: 12px; background: rgba(15,76,92,0.1); border-radius: 999px; overflow: hidden; }
+.bar-row__track i { display: block; height: 100%; background: linear-gradient(90deg, var(--teal-700), var(--gold)); border-radius: 999px; transition: width 0.6s var(--ease); }
+.bar-row__val { font-size: 0.9rem; font-weight: 700; color: var(--teal-900); text-align: right; }
+
 .hidden { display: none !important; }
