@@ -67,4 +67,67 @@ document.addEventListener("DOMContentLoaded", () => {
     { threshold: 0.4 }
   );
   barTracks.forEach((b) => barObserver.observe(b));
+
+  // Scroll-spy: highlight the nav link of the section in view.
+  // Exposed so content-loader can re-init after custom sections are added.
+  let spyObserver = null;
+  window.setupScrollSpy = function () {
+    if (spyObserver) spyObserver.disconnect();
+    const links = [...navLinks.querySelectorAll('a[href^="#"]')];
+    const map = new Map();
+    links.forEach((a) => {
+      const id = a.getAttribute("href").slice(1);
+      const sec = document.getElementById(id);
+      if (sec) map.set(sec, a);
+    });
+    spyObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            links.forEach((l) => l.classList.remove("active"));
+            const a = map.get(entry.target);
+            if (a) a.classList.add("active");
+          }
+        });
+      },
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    map.forEach((_a, sec) => spyObserver.observe(sec));
+  };
+  window.setupScrollSpy();
+
+  // Birthday easter egg (27th) — gentle petals + a one-time greeting
+  try {
+    const now = new Date();
+    if (now.getDate() === 27) {
+      const key = "bday-" + now.toISOString().slice(0, 10);
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(key, "1");
+        runBirthday();
+      }
+    }
+  } catch (e) {}
+
+  function runBirthday() {
+    const layer = document.createElement("div");
+    layer.className = "petals";
+    const petals = ["🌸", "🌷", "🌹", "✨", "💛", "🎀"];
+    let html = "";
+    for (let i = 0; i < 36; i++) {
+      const left = (i * 2.7 % 100).toFixed(2);
+      const delay = (i % 12 * 0.4).toFixed(2);
+      const dur = (6 + (i % 5)).toFixed(2);
+      html += `<span style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s">${petals[i % petals.length]}</span>`;
+    }
+    layer.innerHTML = html;
+    document.body.appendChild(layer);
+
+    const toast = document.createElement("div");
+    toast.className = "bday-toast";
+    toast.innerHTML = "🎂 <strong>Happy Birthday, Dr. Sakara</strong> — wishing you a beautiful year ahead.";
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add("show"));
+    setTimeout(() => toast.classList.remove("show"), 8000);
+    setTimeout(() => { layer.remove(); toast.remove(); }, 16000);
+  }
 });

@@ -4,7 +4,7 @@
 //  conversation (doc id = their uid). Messages are real-time.
 // ============================================================
 
-import { auth, db, googleProvider, roleForUid } from "./firebase-config.js?v=7";
+import { auth, db, googleProvider, roleForUid } from "./firebase-config.js?v=21";
 import {
   onAuthStateChanged, signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";

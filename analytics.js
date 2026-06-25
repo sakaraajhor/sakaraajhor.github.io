@@ -5,7 +5,7 @@
 //  fixed set of numeric counter fields (see Firestore rules).
 // ============================================================
 
-import { db } from "./firebase-config.js?v=7";
+import { db } from "./firebase-config.js?v=21";
 import {
   doc, setDoc, increment, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";

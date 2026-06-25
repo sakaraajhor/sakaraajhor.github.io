@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Managing your site · Dr. Sakara Ajhor</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=9" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230f4c5c'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='52' fill='%23e9c46a' text-anchor='middle'%3ESA%3C/text%3E%3C/svg%3E" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    .guide { max-width: 760px; margin: 0 auto; padding: 80px 24px 100px; }
+    .guide__eyebrow { text-transform: uppercase; letter-spacing: 3px; font-size: 0.76rem; font-weight: 700; color: var(--gold); }
+    .guide h1 { font-family: var(--serif); font-size: clamp(2.2rem, 6vw, 3.2rem); color: var(--teal-900); font-weight: 600; margin: 10px 0 16px; }
+    .guide__lead { color: var(--muted); font-size: 1.1rem; margin-bottom: 14px; }
+    .guide__step { background: var(--white); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 16px; padding: 26px 28px; margin-top: 22px; box-shadow: var(--shadow-sm); }
+    .guide__step h2 { font-family: var(--serif); font-size: 1.5rem; color: var(--teal-900); font-weight: 600; margin-bottom: 10px; display: flex; align-items: baseline; gap: 12px; }
+    .guide__step h2 span { font-size: 0.95rem; color: var(--gold); font-weight: 700; }
+    .guide__step p, .guide__step li { color: var(--ink); line-height: 1.7; }
+    .guide__step ul { margin: 8px 0 0 20px; }
+    .guide__step li { margin-bottom: 6px; }
+    .guide__step b { color: var(--teal-800); }
+    .guide__top { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 40px; color: var(--teal-700); font-weight: 600; }
+    .guide__outro { margin-top: 36px; font-family: var(--serif); font-size: 1.3rem; font-style: italic; color: var(--teal-800); text-align: center; line-height: 1.5; }
+    .tagpill { display: inline-block; background: rgba(42,138,158,0.12); color: var(--teal-800); padding: 2px 10px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="guide">
+    <a href="admin.html" class="guide__top">← Back to admin</a>
+    <p class="guide__eyebrow">For Dr. Sakara Ajhor</p>
+    <h1>Managing your website</h1>
+    <p class="guide__lead">This whole site is yours to update anytime — no code, no help needed. Here's everything in a few simple steps.</p>
+
+    <div class="guide__step">
+      <h2><span>1</span> Signing in</h2>
+      <p>Open your site and scroll to the very bottom — there's a small <span class="tagpill">Admin</span> link in the footer. Click it, then <b>Continue with Google</b> and sign in with your account. That's it — only you can get in.</p>
+    </div>
+
+    <div class="guide__step">
+      <h2><span>2</span> Editing your words &amp; details</h2>
+      <p>From the dashboard, click <b>Edit Content</b>. You can change:</p>
+      <ul>
+        <li>Your intro, the <b>Profile</b> paragraphs, and the three little fact boxes</li>
+        <li>Your contact details — email, phone, location, LinkedIn</li>
+        <li>The reference at the bottom</li>
+      </ul>
+      <p>Edit any field and press <b>Save changes</b>. Your site updates within seconds.</p>
+    </div>
+
+    <div class="guide__step">
+      <h2><span>3</span> Updating your CV</h2>
+      <p>Still in <b>Edit Content</b>, find the <b>Curriculum Vitae</b> box at the top. Choose a new PDF and click <b>Upload &amp; publish</b>. The download button on your site instantly points to the new file. Replace it as often as you like.</p>
+    </div>
+
+    <div class="guide__step">
+      <h2><span>4</span> Adding research, sections &amp; photos</h2>
+      <p>In <b>Edit Content</b>, scroll down to manage your cards:</p>
+      <ul>
+        <li><b>Experience</b>, <b>Research</b>, <b>Skills</b>, and <b>Leadership</b> — add, edit, reorder (↑ ↓), or delete (✕) any entry</li>
+        <li><b>Custom sections</b> — create entirely new sections with your own title and cards (great for publications, awards, anything)</li>
+        <li>Research and custom cards can hold an <b>image</b> — just click Upload on that card</li>
+      </ul>
+      <p>Press <b>Save changes</b> when you're done.</p>
+    </div>
+
+    <div class="guide__step">
+      <h2><span>5</span> Replying to messages</h2>
+      <p>When someone messages you through the chat bubble on your site, it appears under <b>Messages</b>. A red dot shows unread chats. Click a conversation, type a reply, and send — they'll see it in real time.</p>
+    </div>
+
+    <div class="guide__step">
+      <h2><span>6</span> Seeing your visitors</h2>
+      <p>The <b>Analytics</b> tile shows how many people viewed your site, downloaded your CV, opened the chat, and clicked your links — with a graph of the last two weeks. Just for your eyes.</p>
+    </div>
+
+    <p class="guide__outro">This site will grow with you.<br>Keep it yours. 💛</p>
+  </div>
+</body>
+</html>

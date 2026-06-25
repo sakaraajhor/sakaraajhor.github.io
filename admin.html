@@ -7,9 +7,9 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=7" />
-  <link rel="stylesheet" href="admin.css?v=7" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=IM+Fell+English:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=21" />
+  <link rel="stylesheet" href="admin.css?v=21" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230f4c5c'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='52' fill='%23e9c46a' text-anchor='middle'%3ESA%3C/text%3E%3C/svg%3E" />
   <script>
     (function () {
@@ -86,7 +86,7 @@
      <div id="dashHome">
       <div class="dash__head">
         <h1>Welcome, <span id="dashName">there</span><span class="role-badge" id="dashRole"></span></h1>
-        <p>Manage your portfolio content, messages, and more.</p>
+        <p>Manage your portfolio content, messages, and more. <a href="guide.html" class="dash__help">📖 How to manage your site</a></p>
       </div>
 
       <div class="tiles">
@@ -228,7 +228,27 @@
                 <option value="violet">Violet</option>
               </select>
             </div>
-            <button class="btn-save" id="suSend" type="button">Send surprise 🎉</button>
+            <div class="field"><label>Background music (optional)</label>
+              <div class="img-field">
+                <span class="img-field__empty" id="suMusicName">No music</span>
+                <input type="file" accept="audio/*" class="img-field__file" id="suMusicFile">
+                <button type="button" class="btn-mini" id="suMusicUpload">Upload</button>
+              </div>
+            </div>
+            <div class="field"><label>Memories — photos (optional, they slideshow on the card)</label>
+              <div class="img-field">
+                <input type="file" accept="image/*" multiple class="img-field__file" id="suPhotosFile">
+                <button type="button" class="btn-mini" id="suPhotosUpload">Add photos</button>
+              </div>
+              <div class="su-thumbs" id="suThumbs"></div>
+            </div>
+            <div class="field"><label>Letter (flip side, optional) — shown on aged paper in an elegant hand</label>
+              <textarea id="suLetterInput" rows="6" placeholder="Dear Sakara,&#10;&#10;..."></textarea>
+            </div>
+            <div class="su-compose-actions">
+              <button class="btn-text" id="suPreview" type="button">👁 Preview card</button>
+              <button class="btn-save" id="suSend" type="button">Send surprise 🎉</button>
+            </div>
             <span class="editor__status" id="suStatus"></span>
           </div>
           <div class="surprise-preview">
@@ -248,18 +268,33 @@
 
   <!-- Surprise reveal overlay (shown to the doctor) -->
   <div class="su-overlay hidden" id="suOverlay">
+    <button class="su-overlay__close" id="suClose" type="button" aria-label="Close">✕</button>
     <div class="su-confetti" id="suConfetti" aria-hidden="true"></div>
-    <div class="su-card su-card--gold su-card--reveal" id="suRevealCard">
-      <div class="su-card__emoji" id="rvEmoji">🎁</div>
-      <h3 class="su-card__title" id="rvTitle"></h3>
-      <p class="su-card__msg" id="rvMsg"></p>
-      <button class="btn-save" id="suClose" type="button">Thank you 💛</button>
+    <div class="su-flip" id="suFlip">
+      <div class="su-flip__inner" id="suFlipInner">
+        <!-- FRONT -->
+        <div class="su-card su-card--gold su-card--reveal su-flip__face su-flip__front" id="suRevealCard">
+          <div class="su-slideshow hidden" id="suSlideshow"><div class="su-slide-bg" id="suSlideBg"></div><img id="suSlideImg" alt=""></div>
+          <div class="su-card__emoji" id="rvEmoji">🎁</div>
+          <h3 class="su-card__title" id="rvTitle"></h3>
+          <p class="su-card__msg" id="rvMsg"></p>
+          <div class="su-actions">
+            <button class="su-flip-btn hidden" id="suFlipBtn" type="button">✦ Read your letter ✦</button>
+          </div>
+        </div>
+        <!-- BACK (the letter) — tap anywhere to flip home -->
+        <div class="su-card su-flip__face su-flip__back" id="suBackCard" title="Tap to turn back">
+          <div class="su-letter" id="suLetter"></div>
+          <p class="su-letter__hint" id="suMischief">Mischief Managed.</p>
+        </div>
+      </div>
     </div>
+    <audio id="suAudio" loop preload="auto"></audio>
   </div>
 
-  <script src="theme.js?v=7"></script>
+  <script src="theme.js?v=21"></script>
   <script type="module">
-    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js?v=7";
+    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js?v=21";
     import {
       onAuthStateChanged, signInWithPopup, signOut
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -348,6 +383,7 @@
       hero: {
         eyebrow: "Intern Doctor · BDS · Dhaka, Bangladesh",
         lede: "Improving public health outcomes through epidemiological research, health-system strengthening, and data-driven approaches to community-based healthcare delivery.",
+        photo: "",
       },
       about: {
         lead: "I am an intern doctor and dental surgeon committed to the intersection of clinical care and public health.",
@@ -375,6 +411,7 @@
       { group: "Hero", fields: [
         { path: "hero.eyebrow", label: "Eyebrow line", type: "text" },
         { path: "hero.lede", label: "Intro paragraph", type: "textarea" },
+        { path: "hero.photo", label: "Portrait photo (optional — leave empty for the monogram)", type: "image" },
       ]},
       { group: "Profile / About", fields: [
         { path: "about.lead", label: "Lead statement", type: "textarea" },
@@ -907,6 +944,47 @@
     function openSurprise() { $("#dashHome").classList.add("hidden"); $("#surprise").classList.remove("hidden"); updatePreview(); }
     function closeSurprise() { $("#surprise").classList.add("hidden"); $("#dashHome").classList.remove("hidden"); }
 
+    let suMusicUrl = "";
+    $("#suMusicUpload").addEventListener("click", async () => {
+      const fileEl = $("#suMusicFile");
+      const file = fileEl.files && fileEl.files[0];
+      if (!file) { alert("Choose an audio file first."); return; }
+      const btn = $("#suMusicUpload"); const old = btn.textContent;
+      btn.disabled = true; btn.textContent = "Uploading…";
+      try {
+        suMusicUrl = await uploadToCloudinary(file);
+        $("#suMusicName").textContent = file.name;
+        $("#suMusicName").classList.remove("img-field__empty");
+      } catch (e) { alert("Music upload failed: " + (e.message || e)); }
+      finally { btn.disabled = false; btn.textContent = old; }
+    });
+
+    let suPhotos = [];
+    function renderThumbs() {
+      $("#suThumbs").innerHTML = suPhotos.map((u, i) =>
+        `<span class="su-thumb"><img src="${escAttr(u)}" alt=""><button type="button" data-rm="${i}" title="Remove">✕</button></span>`
+      ).join("");
+    }
+    $("#suThumbs").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-rm]");
+      if (!b) return;
+      suPhotos.splice(parseInt(b.dataset.rm, 10), 1);
+      renderThumbs();
+    });
+    $("#suPhotosUpload").addEventListener("click", async () => {
+      const fileEl = $("#suPhotosFile");
+      const files = fileEl.files ? [...fileEl.files] : [];
+      if (!files.length) { alert("Choose one or more images first."); return; }
+      const btn = $("#suPhotosUpload"); const old = btn.textContent;
+      btn.disabled = true; btn.textContent = "Uploading…";
+      try {
+        for (const f of files) { const url = await uploadToCloudinary(f); suPhotos.push(url); }
+        renderThumbs();
+        fileEl.value = "";
+      } catch (e) { alert("Photo upload failed: " + (e.message || e)); }
+      finally { btn.disabled = false; btn.textContent = old; }
+    });
+
     async function sendSurprise() {
       const title = $("#suTitle").value.trim();
       const message = $("#suMsg").value.trim();
@@ -918,12 +996,16 @@
       status.className = "editor__status"; status.textContent = "Sending…";
       try {
         await addDoc(collection(db, "surprises"), {
-          title, message, emoji, accent, seen: false,
+          title, message, emoji, accent, music: suMusicUrl, photos: suPhotos.slice(),
+          letter: $("#suLetterInput").value.trim(), seen: false,
           createdAt: serverTimestamp(), from: auth.currentUser.uid,
         });
         status.className = "editor__status ok";
         status.textContent = "Sent! It'll surprise her on next login. 🎉";
-        $("#suTitle").value = ""; $("#suMsg").value = ""; updatePreview();
+        $("#suTitle").value = ""; $("#suMsg").value = ""; $("#suLetterInput").value = ""; suMusicUrl = ""; suPhotos = [];
+        $("#suMusicFile").value = ""; $("#suMusicName").textContent = "No music"; $("#suMusicName").classList.add("img-field__empty");
+        renderThumbs();
+        updatePreview();
       } catch (e) {
         status.className = "editor__status err"; status.textContent = "Failed: " + (e.message || e);
       } finally { btn.disabled = false; }
@@ -932,10 +1014,66 @@
     $("#engineerTile").addEventListener("click", openSurprise);
     $("#surpriseBack").addEventListener("click", closeSurprise);
     $("#suSend").addEventListener("click", sendSurprise);
+    $("#suPreview").addEventListener("click", () => {
+      previewing = true;
+      revealSurprise({
+        id: "__preview__",
+        title: $("#suTitle").value.trim() || "Your title",
+        message: $("#suMsg").value.trim(),
+        emoji: $("#suEmoji").value.trim() || "🎁",
+        accent: $("#suAccent").value,
+        photos: suPhotos.slice(),
+        music: suMusicUrl,
+        letter: $("#suLetterInput").value.trim(),
+      });
+    });
+    // Flipping never alters the letter — only Mischief Managed does, and that result stays.
+    $("#suFlipBtn").addEventListener("click", () => $("#suFlipInner").classList.add("flipped"));
+    $("#suBackCard").addEventListener("click", () => $("#suFlipInner").classList.remove("flipped"));
+
+    // "Mischief Managed" — erase the letter, then reveal a secret line
+    $("#suMischief").addEventListener("click", (e) => {
+      e.stopPropagation();
+      const el = $("#suLetter"), m = $("#suMischief");
+      if (mischiefRunning || !el.textContent.trim()) return;
+      mischiefRunning = true;
+      m.style.opacity = "0";
+      let txt = el.textContent;
+      if (mischiefTimer) clearInterval(mischiefTimer);
+      mischiefTimer = setInterval(() => {
+        txt = txt.slice(0, -1);
+        el.textContent = txt;
+        if (!txt.length) {
+          clearInterval(mischiefTimer);
+          el.classList.add("su-letter--center");
+          const secret = "Thanks for Existing.\n\n— from the engineer";
+          let i = 0;
+          mischiefTimer = setInterval(() => {
+            el.textContent = secret.slice(0, ++i);
+            if (i >= secret.length) { clearInterval(mischiefTimer); mischiefTimer = null; mischiefRunning = false; }
+          }, 80);
+        }
+      }, 16);
+    });
+
+    // Click the dim backdrop (outside the card) to close
+    $("#suOverlay").addEventListener("click", (e) => {
+      if (e.target === $("#suOverlay")) closeReveal();
+    });
 
     // Doctor receives surprises in real time
-    let surpriseUnsub = null, revealCurrent = null;
+    let surpriseUnsub = null, revealCurrent = null, slideTimer = null, typeTimer = null;
+    let currentLetterText = "", mischiefTimer = null, mischiefRunning = false, previewing = false;
     const shownSurprises = new Set();
+
+    function resetMischief() {
+      if (mischiefTimer) { clearInterval(mischiefTimer); mischiefTimer = null; }
+      mischiefRunning = false;
+      $("#suLetter").classList.remove("su-letter--center");
+      const m = $("#suMischief");
+      m.style.opacity = "";
+      m.style.display = currentLetterText ? "" : "none";
+    }
 
     function watchSurprises() {
       if (surpriseUnsub) return;
@@ -961,24 +1099,151 @@
       $("#suConfetti").innerHTML = html;
     }
 
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0; const l = (max + min) / 2;
+      const d = max - min;
+      if (d) {
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h /= 6;
+      }
+      return { h: h * 360, s, l };
+    }
+    const hsl = (h, s, l) => `hsl(${h.toFixed(0)}, ${(s * 100).toFixed(0)}%, ${(l * 100).toFixed(0)}%)`;
+
+    // Tint the card from the photo — rich for colour, elegant charcoal for B&W
+    function applyPhotoAccent(img, card) {
+      try {
+        const cv = document.createElement("canvas");
+        const w = (cv.width = 28), h = (cv.height = 28);
+        const ctx = cv.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        const d = ctx.getImageData(0, 0, w, h).data;
+        let r = 0, g = 0, b = 0, n = 0;
+        for (let i = 0; i < d.length; i += 4) {
+          if (d[i + 3] < 125) continue;
+          r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
+        }
+        if (!n) return;
+        r /= n; g /= n; b /= n;
+        const c = rgbToHsl(r, g, b);
+        let bg, text;
+        if (c.s < 0.16) {
+          // near monochrome → elegant deep charcoal (warm), not muddy grey
+          bg = "linear-gradient(135deg, #3a3640, #16141b)";
+          text = "#fff";
+        } else {
+          const sat = Math.min(0.72, c.s * 1.35 + 0.12);
+          bg = `linear-gradient(135deg, ${hsl(c.h, sat, 0.42)}, ${hsl(c.h, sat, 0.2)})`;
+          text = "#fff";
+        }
+        card.style.background = bg;
+        card.style.color = text;
+      } catch (e) { /* CORS-tainted canvas → keep the chosen accent */ }
+    }
+
     function revealSurprise(s) {
       shownSurprises.add(s.id);
       revealCurrent = s;
+      const card = $("#suRevealCard");
       $("#rvEmoji").textContent = s.emoji || "🎁";
       $("#rvTitle").textContent = s.title || "";
-      $("#rvMsg").textContent = s.message || "";
-      $("#suRevealCard").className = "su-card su-card--reveal su-card--" + (s.accent || "gold");
+      card.className = "su-card su-card--reveal su-flip__face su-flip__front su-card--" + (s.accent || "gold");
+      card.style.background = ""; card.style.color = "";
+
+      // Letter (flip side)
+      const letter = (s.letter || "").trim();
+      currentLetterText = letter;
+      $("#suLetter").textContent = letter;
+      resetMischief();
+      $("#suFlipBtn").classList.toggle("hidden", !letter);
+      $("#suFlipInner").classList.remove("flipped");
+
       makeConfetti();
       $("#suOverlay").classList.remove("hidden");
+
+      // Photo memories slideshow (falls back to the emoji)
+      if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
+      const slideshow = $("#suSlideshow"), slideImg = $("#suSlideImg"), emoji = $("#rvEmoji");
+      const photos = Array.isArray(s.photos) ? s.photos.filter(Boolean) : [];
+      const slideBg = $("#suSlideBg");
+      if (photos.length) {
+        emoji.classList.add("hidden");
+        slideshow.classList.remove("hidden");
+        let idx = 0;
+        slideImg.crossOrigin = "anonymous";
+        slideImg.style.opacity = "1";
+        slideImg.onload = () => { applyPhotoAccent(slideImg, card); slideImg.onload = null; };
+        slideImg.src = photos[0];
+        slideBg.style.backgroundImage = `url("${photos[0]}")`;
+        if (photos.length > 1) {
+          slideTimer = setInterval(() => {
+            idx = (idx + 1) % photos.length;
+            slideImg.style.opacity = "0";
+            setTimeout(() => {
+              slideImg.src = photos[idx];
+              slideBg.style.backgroundImage = `url("${photos[idx]}")`;
+              slideImg.style.opacity = "1";
+            }, 280);
+          }, 2800);
+        }
+      } else {
+        slideshow.classList.add("hidden");
+        emoji.classList.remove("hidden");
+      }
+
+      // Typewriter message
+      if (typeTimer) { clearInterval(typeTimer); typeTimer = null; }
+      const rvMsg = $("#rvMsg"), full = s.message || "";
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduced || !full) {
+        rvMsg.textContent = full;
+      } else {
+        rvMsg.textContent = "";
+        let i = 0;
+        typeTimer = setInterval(() => {
+          rvMsg.textContent = full.slice(0, ++i);
+          if (i >= full.length) { clearInterval(typeTimer); typeTimer = null; }
+        }, 38);
+      }
+
+      // Background music — autoplay; if the browser blocks it, the next
+      // tap/keypress anywhere starts it (no visible button needed)
+      const audio = $("#suAudio");
+      if (s.music) {
+        audio.src = s.music;
+        audio.currentTime = 0;
+        audio.play().catch(() => {
+          const start = () => {
+            if (!$("#suOverlay").classList.contains("hidden")) audio.play().catch(() => {});
+          };
+          document.addEventListener("pointerdown", start, { once: true });
+          document.addEventListener("keydown", start, { once: true });
+        });
+      } else {
+        audio.removeAttribute("src");
+      }
     }
 
     async function closeReveal() {
       $("#suOverlay").classList.add("hidden");
       $("#suConfetti").innerHTML = "";
-      if (revealCurrent) {
+      $("#suFlipInner").classList.remove("flipped");
+      if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
+      if (typeTimer) { clearInterval(typeTimer); typeTimer = null; }
+      if (mischiefTimer) { clearInterval(mischiefTimer); mischiefTimer = null; }
+      mischiefRunning = false;
+      const audio = $("#suAudio");
+      audio.pause(); audio.currentTime = 0;
+      if (revealCurrent && !previewing) {
         try { await updateDoc(doc(db, "surprises", revealCurrent.id), { seen: true }); } catch (e) {}
-        revealCurrent = null;
       }
+      revealCurrent = null;
+      previewing = false;
     }
     $("#suClose").addEventListener("click", closeReveal);
   </script>

@@ -6,7 +6,7 @@
 //  the site never breaks.
 // ============================================================
 
-import { db } from "./firebase-config.js?v=7";
+import { db } from "./firebase-config.js?v=21";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 function getPath(obj, path) {
@@ -168,6 +168,8 @@ function renderCustomSections(sections) {
       nav.insertBefore(a, cvLink);
     });
   }
+  // Re-init scroll-spy so the new sections highlight in the nav
+  if (window.setupScrollSpy) window.setupScrollSpy();
 }
 
 // ---- run ------------------------------------------------------
@@ -216,6 +218,18 @@ function renderCustomSections(sections) {
       }
       el.setAttribute("href", href);
     });
+  }
+
+  // Optional hero photo (falls back to the monogram if absent)
+  const heroPhoto = getPath(data, "hero.photo");
+  if (heroPhoto) {
+    const img = document.getElementById("portraitImg");
+    const portrait = document.getElementById("portrait");
+    if (img && portrait) {
+      img.src = heroPhoto;
+      img.removeAttribute("hidden");
+      portrait.classList.add("portrait--has-photo");
+    }
   }
 
   // Card collections + custom sections
