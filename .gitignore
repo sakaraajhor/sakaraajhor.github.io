@@ -10,7 +10,13 @@ Thumbs.db
 # Playwright / preview artifacts
 .playwright-mcp/
 preview-*.png
+
+# Images stay out of the repo — real photos upload to Cloudinary.
+# (Personal photos here are for local testing only.)
 *.png
+*.jpg
+*.jpeg
+*.webp
 
 # Scratch / local notes (raw config dump — not needed in repo)
 info

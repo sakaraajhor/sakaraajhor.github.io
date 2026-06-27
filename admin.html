@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=IM+Fell+English:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=21" />
-  <link rel="stylesheet" href="admin.css?v=21" />
+  <link rel="stylesheet" href="styles.css?v=23" />
+  <link rel="stylesheet" href="admin.css?v=23" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230f4c5c'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='52' fill='%23e9c46a' text-anchor='middle'%3ESA%3C/text%3E%3C/svg%3E" />
   <script>
     (function () {
@@ -105,6 +105,11 @@
           <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div>
           <h3>Analytics</h3>
           <p>Visits, link clicks, and engagement KPIs.</p>
+        </button>
+        <button class="tile tile--active hidden" id="tileKeepsakes" type="button">
+          <div class="tile__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Zm0 0h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z"/></svg></div>
+          <h3>Keepsakes</h3>
+          <p>Reopen the surprises you've received.</p>
         </button>
 
         <!-- Engineer-only: hidden from the doctor -->
@@ -207,6 +212,17 @@
         <p class="analytics__note" id="analyticsUpdated"></p>
       </section>
 
+      <!-- Keepsakes — revisit received surprises -->
+      <section id="keepsakes" class="keepsakes hidden">
+        <div class="editor__head">
+          <button class="btn-text" id="keepsakesBack" type="button">← Back</button>
+          <h2>Keepsakes</h2>
+          <span></span>
+        </div>
+        <p class="editor__hint">Every surprise, to open again whenever you like.</p>
+        <div class="keepsakes-grid" id="keepsakesList"><p class="inbox__empty">No surprises yet.</p></div>
+      </section>
+
       <!-- Engineer-only surprise composer -->
       <section id="surprise" class="surprise-compose hidden">
         <div class="editor__head">
@@ -292,14 +308,14 @@
     <audio id="suAudio" loop preload="auto"></audio>
   </div>
 
-  <script src="theme.js?v=21"></script>
+  <script src="theme.js?v=23"></script>
   <script type="module">
-    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js?v=21";
+    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js?v=23";
     import {
       onAuthStateChanged, signInWithPopup, signOut
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
     import {
-      doc, getDoc, setDoc, updateDoc, collection, addDoc, query, orderBy, where,
+      doc, getDoc, getDocs, setDoc, updateDoc, collection, addDoc, query, orderBy, where,
       onSnapshot, serverTimestamp, increment
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
@@ -371,6 +387,7 @@
       badge.textContent = role;
       badge.className = "role-badge role-badge--" + role;
       $("#engineerTile").classList.toggle("hidden", role !== "engineer");
+      $("#tileKeepsakes").classList.remove("hidden");
       show("dash");
       subscribeConversations();
       if (role === "doctor") watchSurprises();
@@ -928,6 +945,42 @@
     $("#analyticsBack").addEventListener("click", closeAnalytics);
 
     // ----------------------------------------------------------
+    //  Keepsakes — revisit & replay received surprises
+    // ----------------------------------------------------------
+    async function openKeepsakes() {
+      $("#dashHome").classList.add("hidden");
+      $("#keepsakes").classList.remove("hidden");
+      const list = $("#keepsakesList");
+      list.innerHTML = '<p class="inbox__empty">Loading…</p>';
+      try {
+        const snap = await getDocs(query(collection(db, "surprises"), orderBy("createdAt", "desc")));
+        if (snap.empty) { list.innerHTML = '<p class="inbox__empty">No surprises yet.</p>'; return; }
+        keepsakeData = {};
+        list.innerHTML = snap.docs.map((d) => {
+          const s = d.data(); keepsakeData[d.id] = s;
+          const date = (s.createdAt && s.createdAt.toDate)
+            ? s.createdAt.toDate().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
+          return `<button class="keepsake su-card--${s.accent || "gold"}" data-id="${d.id}">
+            <span class="keepsake__emoji">${escHtml(s.emoji || "🎁")}</span>
+            <span class="keepsake__title">${escHtml(s.title || "A surprise")}</span>
+            <span class="keepsake__date">${escHtml(date)}</span>
+          </button>`;
+        }).join("");
+      } catch (e) {
+        list.innerHTML = `<p class="inbox__empty">Couldn't load: ${escHtml(e.message)}</p>`;
+      }
+    }
+    function closeKeepsakes() { $("#keepsakes").classList.add("hidden"); $("#dashHome").classList.remove("hidden"); }
+    $("#keepsakesList").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-id]");
+      if (!b) return;
+      const s = keepsakeData[b.dataset.id];
+      if (s) { previewing = true; revealSurprise(s); } // replay without re-marking seen
+    });
+    $("#tileKeepsakes").addEventListener("click", openKeepsakes);
+    $("#keepsakesBack").addEventListener("click", closeKeepsakes);
+
+    // ----------------------------------------------------------
     //  Surprise cards (Phase 7) — engineer composes, doctor receives
     // ----------------------------------------------------------
     function updatePreview() {
@@ -1064,6 +1117,7 @@
     // Doctor receives surprises in real time
     let surpriseUnsub = null, revealCurrent = null, slideTimer = null, typeTimer = null;
     let currentLetterText = "", mischiefTimer = null, mischiefRunning = false, previewing = false;
+    let keepsakeData = {};
     const shownSurprises = new Set();
 
     function resetMischief() {
@@ -1171,6 +1225,11 @@
       const slideshow = $("#suSlideshow"), slideImg = $("#suSlideImg"), emoji = $("#rvEmoji");
       const photos = Array.isArray(s.photos) ? s.photos.filter(Boolean) : [];
       const slideBg = $("#suSlideBg");
+      const startKen = () => {
+        slideImg.style.animation = "none";
+        void slideImg.offsetWidth;          // reflow to restart the zoom
+        slideImg.style.animation = "suKen 8s ease-out forwards";
+      };
       if (photos.length) {
         emoji.classList.add("hidden");
         slideshow.classList.remove("hidden");
@@ -1180,6 +1239,7 @@
         slideImg.onload = () => { applyPhotoAccent(slideImg, card); slideImg.onload = null; };
         slideImg.src = photos[0];
         slideBg.style.backgroundImage = `url("${photos[0]}")`;
+        startKen();
         if (photos.length > 1) {
           slideTimer = setInterval(() => {
             idx = (idx + 1) % photos.length;
@@ -1188,7 +1248,8 @@
               slideImg.src = photos[idx];
               slideBg.style.backgroundImage = `url("${photos[idx]}")`;
               slideImg.style.opacity = "1";
-            }, 280);
+              startKen();
+            }, 450);
           }, 2800);
         }
       } else {
