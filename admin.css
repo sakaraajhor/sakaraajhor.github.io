@@ -388,7 +388,7 @@ button.tile { font: inherit; text-align: left; cursor: pointer; color: inherit; 
 
 /* Mischief Managed: lines fade away one by one */
 .su-line { display: block; transition: opacity 0.65s ease, transform 0.65s ease; }
-.su-line--gone { opacity: 0; transform: translateY(-8px); }
+.su-line--gone { opacity: 0; transform: translateY(8px); }
 .su-secret { opacity: 0; transition: opacity 0.9s ease; }
 .su-secret.show { opacity: 1; }
 

@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=IM+Fell+English:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=24" />
-  <link rel="stylesheet" href="admin.css?v=24" />
+  <link rel="stylesheet" href="styles.css?v=25" />
+  <link rel="stylesheet" href="admin.css?v=25" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230f4c5c'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='52' fill='%23e9c46a' text-anchor='middle'%3ESA%3C/text%3E%3C/svg%3E" />
   <script>
     (function () {
@@ -308,9 +308,9 @@
     <audio id="suAudio" loop preload="auto"></audio>
   </div>
 
-  <script src="theme.js?v=24"></script>
+  <script src="theme.js?v=25"></script>
   <script type="module">
-    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js?v=24";
+    import { auth, googleProvider, roleForUid, db, CLOUDINARY } from "./firebase-config.js?v=25";
     import {
       onAuthStateChanged, signInWithPopup, signOut
     } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -1095,8 +1095,9 @@
       const lines = el.textContent.split("\n");
       el.innerHTML = lines.map((l) => `<span class="su-line">${l.trim() === "" ? "&nbsp;" : escHtml(l)}</span>`).join("");
       const lineEls = [...el.querySelectorAll(".su-line")];
-      lineEls.forEach((ln, i) => setTimeout(() => ln.classList.add("su-line--gone"), 250 + i * 160));
-      const total = 250 + lineEls.length * 160 + 750;
+      const n = lineEls.length;
+      lineEls.forEach((ln, i) => setTimeout(() => ln.classList.add("su-line--gone"), 250 + (n - 1 - i) * 160)); // bottom line fades first
+      const total = 250 + n * 160 + 750;
       if (mischiefTimer) clearTimeout(mischiefTimer);
       mischiefTimer = setTimeout(() => {
         el.classList.add("su-letter--center");
@@ -1248,7 +1249,7 @@
               slideImg.style.opacity = "1";
               startKen();
             }, 450);
-          }, 2800);
+          }, 3500);
         }
       } else {
         slideshow.classList.add("hidden");
