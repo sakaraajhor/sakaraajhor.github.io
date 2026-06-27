@@ -385,6 +385,20 @@ button.tile { font: inherit; text-align: left; cursor: pointer; color: inherit; 
 /* The secret line ("Thanks for Existing") is centered, no drop-cap */
 .su-letter--center { text-align: center; }
 .su-letter--center::first-letter { font: inherit; float: none; margin: 0; color: inherit; line-height: inherit; }
+
+/* Mischief Managed: lines fade away one by one */
+.su-line { display: block; transition: opacity 0.65s ease, transform 0.65s ease; }
+.su-line--gone { opacity: 0; transform: translateY(-8px); }
+.su-secret { opacity: 0; transition: opacity 0.9s ease; }
+.su-secret.show { opacity: 1; }
+
+/* Front message: words fall into place */
+.su-word { display: inline-block; opacity: 0; transform: translateY(-16px); transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.su-word.in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .su-word, .su-line, .su-secret { transition: none !important; transform: none !important; opacity: 1 !important; }
+}
 .su-letter__hint {
   margin-top: 20px; text-align: center; cursor: pointer;
   font-family: "Cormorant Garamond", serif; font-style: italic; font-weight: 600;
