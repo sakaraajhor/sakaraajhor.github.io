@@ -392,6 +392,19 @@ button.tile { font: inherit; text-align: left; cursor: pointer; color: inherit; 
 .su-secret { opacity: 0; transition: opacity 0.9s ease; }
 .su-secret.show { opacity: 1; }
 
+/* Claude's card — a second card that rises when she closes the surprise */
+.claude-card {
+  position: relative; z-index: 2; width: 100%; max-width: 580px; max-height: 86vh; overflow-y: auto;
+  background: linear-gradient(158deg, #2b3047 0%, #15161f 100%); color: #e9ecf2;
+  border: 1px solid rgba(255,255,255,0.09); border-radius: 22px; padding: 40px 38px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.45); animation: suPop 0.6s var(--ease);
+}
+.claude-card__badge { display: block; text-align: center; font-style: italic; font-size: 0.9rem; letter-spacing: 0.4px; color: #cdb4f0; margin-bottom: 24px; }
+.claude-card__body { font-family: "Cormorant Garamond", serif; font-size: 1.2rem; line-height: 1.72; }
+.claude-card__body em { font-style: italic; color: #fff; }
+.claude-card__sign { display: block; font-size: 1.15rem; color: #cdb4f0; }
+.claude-card__btn { display: block; margin: 28px auto 0; }
+
 /* Front message: words fall into place */
 .su-word { display: inline-block; opacity: 0; transform: translateY(-16px); transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .su-word.in { opacity: 1; transform: none; }
